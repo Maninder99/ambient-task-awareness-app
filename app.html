@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Mindful Task App</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="app-container">
+
+        <!-- ===== TODAY VIEW ===== -->
+        <div id="today-view" class="view">
+            <header class="app-header">
+                <button class="icon-button">&#9776;</button>
+                <h2>Today</h2>
+                <div class="mindful-break-chip">
+                    <span class="leaf-icon-chip">&#127810;</span> Mindful Break
+                </div>
+            </header>
+            <main id="task-list" class="task-list-container">
+                <!-- Tasks will be injected here by JS -->
+            </main>
+            <button id="add-task-btn" class="fab">+</button>
+        </div>
+
+        <!-- ===== IN-TASK VIEW ===== -->
+        <div id="task-view" class="view hidden">
+            <header class="app-header">
+                <button id="back-to-today-btn" class="icon-button">&#8592;</button>
+                <div class="mindful-break-chip">
+                    <span class="leaf-icon-chip">&#127810;</span> Mindful Break
+                </div>
+            </header>
+            <main id="tree-container" class="tree-container">
+                <!-- NEW Realistic Tree branch SVG -->
+                <svg id="tree-branch" viewBox="0 0 500 300" preserveAspectRatio="xMidYMin meet">
+                    <path d="M22.5,299.5 C22.5,299.5 62,267 84,248 C106,229 133.5,221.5 174,196 C214.5,170.5 249,158 287,131 C325,104 366.5,88.5 401.5,58.5 M174,196 C168,188 168.5,171.5 168,162 M140,165 C132,156.5 125.5,145 119.5,133.5 M287,131 C281.5,123 277.5,112 274,103 M250,110 C243,101 234,92.5 228,84 M355,95 C364,88 375,79.5 385,71.5 M401.5,58.5 C413.5,50 427,39 439.5,28.5 M401.5,58.5 C415,53.5 432,49 448,42 M460,37 C470,30.5 479,23.5 487.5,16.5" fill="none" stroke-width="5" stroke-linecap="round" />
+                </svg>
+                 <!-- Leaves will be added here by JS -->
+            </main>
+            <footer class="task-footer">
+                <div class="progress-bar-container">
+                    <div id="progress-bar" class="progress-bar"></div>
+                </div>
+                <div id="time-display">10:00</div>
+                <div id="reminders-display">Reminders: 2</div>
+                <div class="task-details-bottom">
+                    <h3 id="active-task-name">Article Reading</h3>
+                    <p>Time Tracking</p>
+                </div>
+                <div class="task-controls">
+                    <button id="pause-btn" class="secondary-button">Pause</button>
+                    <button id="done-btn" class="primary-button">Done</button>
+                </div>
+            </footer>
+        </div>
+
+        <!-- ===== EDIT / NEW TASK VIEW ===== -->
+        <div id="edit-task-view" class="view hidden">
+            <header class="app-header">
+                <h2 id="edit-view-title">New Task</h2>
+                <button id="close-edit-view-btn" class="icon-button">&#10005;</button>
+            </header>
+            <main class="form-container">
+                <input type="text" id="task-name-input" placeholder="Enter a task name">
+                <div class="duration-input">
+                    <input type="number" id="task-duration-min" value="0" min="0">
+                    <span>:</span>
+                    <input type="number" id="task-duration-sec" value="0" min="0" max="59">
+                </div>
+                <p class="form-label">Reminders (automatically at x%)</p>
+                <textarea id="task-notes-input" placeholder="Add a custom reminder..." rows="3"></textarea>
+                
+                <button id="restart-task-btn" class="secondary-button hidden">Restart Task</button>
+            </main>
+            <footer class="edit-footer">
+                 <button id="delete-task-btn" class="delete-button hidden">Delete</button>
+                 <button id="save-task-btn" class="primary-button" disabled>Save Task</button>
+            </footer>
+        </div>
+
+        <!-- ===== OVERLAYS & POPUPS ===== -->
+        <div id="pause-overlay" class="overlay hidden">
+            <div class="overlay-content">
+                <p>Paused</p>
+                <button id="resume-btn" class="primary-button">Resume</button>
+            </div>
+        </div>
+
+        <div id="mindful-break-overlay" class="overlay hidden">
+             <div id="mindful-tree-container" class="tree-container">
+                 <svg id="mindful-tree-branch" viewBox="0 0 500 300" preserveAspectRatio="xMidYMin meet">
+                    <path d="M22.5,299.5 C22.5,299.5 62,267 84,248 C106,229 133.5,221.5 174,196 C214.5,170.5 249,158 287,131 C325,104 366.5,88.5 401.5,58.5 M174,196 C168,188 168.5,171.5 168,162 M140,165 C132,156.5 125.5,145 119.5,133.5 M287,131 C281.5,123 277.5,112 274,103 M250,110 C243,101 234,92.5 228,84 M355,95 C364,88 375,79.5 385,71.5 M401.5,58.5 C413.5,50 427,39 439.5,28.5 M401.5,58.5 C415,53.5 432,49 448,42 M460,37 C470,30.5 479,23.5 487.5,16.5" fill="none" stroke-width="5" stroke-linecap="round" />
+                </svg>
+             </div>
+             <div class="overlay-content mindful-prompt">
+                <p>Follow the yellow leaf...</p>
+                <button id="end-mindful-break-btn" class="primary-button">Take a mindful breath</button>
+            </div>
+        </div>
+        
+        <div id="confirmation-modal" class="modal hidden">
+            <div class="modal-content">
+                <p id="confirmation-message">Are you sure?</p>
+                <button id="confirm-action-btn" class="primary-button">Confirm</button>
+                <button id="cancel-action-btn" class="secondary-button">Cancel</button>
+            </div>
+        </div>
+        
+        <div id="add-time-prompt" class="modal hidden">
+             <div class="modal-content">
+                <p>Time is running low, do you need more time?</p>
+                <button id="add-15-min-btn" class="primary-button">Add 15 mins</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- NEW Leaf SVG template, hidden -->
+    <svg width="0" height="0" style="position:absolute;z-index:-1;">
+      <defs>
+        <g id="leaf-shape" transform="rotate(45 15 15)">
+            <path d="M15.4,29.3C12.3,29.7,9,28.6,6.4,26.4c-4.2-3.6-6-9-5.4-14.2c0.2-1.8,0.9-3.6,2-5.1C4.4,5,6.2,3.3,8.3,2.2
+            c4.1-2.2,9-2.2,13.1,0c4.9,2.6,8,7.6,8.6,12.9c0.1,1.1,0,2.2-0.2,3.3C29,20.2,28.2,21.8,27,23.2c-2.4,2.9-5.8,4.9-9.5,5.7
+            C16.8,29,16.1,29.1,15.4,29.3z"/>
+        </g>
+      </defs>
+    </svg>
+
+
+    <script src="script.js"></script>
+</body>
+</html>

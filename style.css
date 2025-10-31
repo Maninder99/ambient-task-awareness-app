@@ -1,0 +1,394 @@
+/* ===== SETUP & VARIABLES ===== */
+:root {
+    --primary-purple: #6e44ff;
+    --light-purple: #e7e0ff;
+    --dark-text: #333;
+    --light-text: #666;
+    --background-color: #fdfdff;
+    --border-color: #e0e0e0;
+    --delete-red: #ff3b30;
+    --leaf-green: #2E7D32; /* A slightly deeper green */
+    --leaf-yellow: #FFC107;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0;
+    background-color: #222;
+    display: flex;
+    justify-content: center;
+    padding-top: 20px;
+}
+
+#app-container {
+    width: 412px;
+    height: 892px;
+    background-color: var(--background-color);
+    border-radius: 40px;
+    border: 1px solid #444;
+    box-shadow: 0 0 30px rgba(255,255,255,0.1);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* ===== VIEWS & LAYOUT ===== */
+.view {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.app-header h2 {
+    margin: 0;
+    font-size: 1.2em;
+}
+
+main {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+/* ===== TODAY VIEW ===== */
+.mindful-break-chip {
+    background-color: var(--light-purple);
+    color: var(--primary-purple);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.9em;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.leaf-icon-chip {
+    color: var(--leaf-green);
+    font-family: 'Times New Roman', Times, serif; /* Make icon more leaflike */
+}
+
+.task-list-container {
+    padding: 20px;
+}
+
+.task-item {
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+}
+
+.task-item.completed-flash {
+    background-color: var(--light-purple);
+    transition: background-color 0.2s ease-in-out;
+}
+
+.task-item .checkbox {
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--border-color);
+    border-radius: 50%;
+    margin-right: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.task-item.completed .checkbox {
+    background-color: var(--primary-purple);
+    border-color: var(--primary-purple);
+}
+
+.task-item-content h3 {
+    margin: 0 0 5px 0;
+    font-size: 1em;
+}
+.task-item-content p {
+    margin: 0;
+    font-size: 0.85em;
+    color: var(--light-text);
+}
+.task-item .edit-icon {
+    margin-left: auto;
+    cursor: pointer;
+}
+
+.fab {
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background-color: var(--primary-purple);
+    color: white;
+    font-size: 2em;
+    border: none;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    cursor: pointer;
+}
+
+/* ===== IN-TASK VIEW ===== */
+.tree-container {
+    flex-grow: 1;
+    position: relative;
+    overflow: hidden;
+}
+
+#tree-branch, #mindful-tree-branch {
+    position: absolute;
+    bottom: -40px;
+    left: -40px;
+    width: 120%;
+    height: 120%;
+    stroke: #333;
+    stroke-width: 4px; /* Slightly thicker */
+    fill: none;
+}
+
+.leaf {
+    position: absolute;
+    width: 26px; /* Adjusted for new shape */
+    height: 30px; /* Adjusted for new shape */
+    fill: var(--leaf-green);
+    animation-timing-function: cubic-bezier(0.55, 0.085, 0.68, 0.53); /* Ease-in */
+    animation-iteration-count: 1;
+    will-change: transform;
+    opacity: 0; /* Start invisible, animation makes it visible */
+    animation-name: fall; /* Default animation */
+}
+
+.leaf.yellow {
+    fill: var(--leaf-yellow);
+    transform: scale(1.1); /* Slightly larger */
+    z-index: 10; /* Ensure it's on top */
+    animation-name: fall-yellow; /* Special animation */
+    animation-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1); /* Ease-in-out */
+}
+
+.task-footer {
+    padding: 20px;
+    border-top: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.progress-bar-container {
+    width: 100%;
+    height: 8px;
+    background-color: #eee;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+.progress-bar {
+    width: 100%;
+    height: 100%;
+    background-color: var(--primary-purple);
+    border-radius: 4px;
+    transition: width 0.5s ease-out;
+}
+
+#time-display {
+    font-size: 1.5em;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+#reminders-display {
+    font-size: 0.9em;
+    color: var(--light-text);
+    margin-bottom: 15px;
+}
+
+.task-details-bottom h3 {
+    margin: 0;
+}
+.task-details-bottom p {
+    margin: 0 0 15px 0;
+    color: var(--light-text);
+    font-size: 0.9em;
+}
+
+.task-controls {
+    display: flex;
+    gap: 10px;
+}
+
+/* ===== EDIT/NEW TASK VIEW ===== */
+.form-container {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+#task-name-input, #task-notes-input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1em;
+    box-sizing: border-box;
+}
+
+.duration-input {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 2em;
+    font-weight: bold;
+}
+.duration-input input {
+    width: 60px;
+    font-size: inherit;
+    font-weight: inherit;
+    text-align: center;
+    border: none;
+    background: #f4f4f4;
+    border-radius: 8px;
+    padding: 5px;
+}
+
+.edit-footer {
+    padding: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+/* ===== BUTTONS & CONTROLS ===== */
+.icon-button {
+    background: none;
+    border: none;
+    font-size: 1.5em;
+    cursor: pointer;
+}
+.primary-button, .secondary-button, .delete-button {
+    flex-grow: 1;
+    padding: 15px;
+    border-radius: 8px;
+    border: none;
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+}
+.primary-button {
+    background-color: var(--primary-purple);
+    color: white;
+}
+.primary-button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+.secondary-button {
+    background-color: #eee;
+    color: var(--dark-text);
+}
+.delete-button {
+    background-color: transparent;
+    color: var(--delete-red);
+    flex-grow: 0; /* Doesn't grow */
+    margin-right: auto; /* Pushes other buttons to the right */
+}
+
+/* ===== OVERLAYS & MODALS ===== */
+.overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(5px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+.overlay-content {
+    text-align: center;
+}
+.overlay-content p {
+    font-size: 1.5em;
+    font-weight: bold;
+}
+.overlay-content .primary-button {
+    width: 200px;
+}
+.mindful-prompt {
+    position: absolute;
+    bottom: 100px;
+    width: 80%;
+    z-index: 10;
+}
+
+.modal {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 200;
+}
+.modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    width: 80%;
+    max-width: 300px;
+}
+.modal-content p {
+    margin-top: 0;
+}
+.modal-content button {
+    width: 100%;
+    margin-top: 10px;
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes fall {
+  0% { transform: translateY(0vh) translateX(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(90vh) translateX(var(--x-end)) rotate(var(--rotate-end)); opacity: 0; }
+}
+
+/* NEW animation for the special yellow leaf */
+@keyframes fall-yellow {
+  0% { transform: translateY(0vh) translateX(0) rotate(0deg) scale(1.1); opacity: 1; }
+  100% { transform: translateY(90vh) translateX(-5vw) rotate(360deg) scale(1.1); opacity: 0; }
+}
+
+@keyframes branch-shake {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-1.5deg); }
+  75% { transform: rotate(1.5deg); }
+}
+
+.branch-shake-anim {
+    transform-origin: bottom left;
+    animation: branch-shake 0.5s ease-in-out 3;
+}
+
+.purple-bg-flash {
+    background-color: var(--light-purple);
+    transition: background-color 0.5s;
+}
