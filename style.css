@@ -1,302 +1,120 @@
-/* ===== SETUP & VARIABLES ===== */
-:root {
-    --primary-purple: #6e44ff;
-    --light-purple: #e7e0ff;
-    --dark-text: #333;
-    --light-text: #666;
-    --background-color: #fdfdff;
-    --border-color: #e0e0e0;
-    --delete-red: #ff3b30;
-    --leaf-green: #2E7D32;
-    --leaf-yellow: #FFC107;
+:root{
+  --primary-purple:#6e44ff;
+  --light-purple:#e7e0ff;
+  --dark-text:#333;
+  --light-text:#666;
+  --background-color:#fdfdff;
+  --border-color:#e0e0e0;
+  --delete-red:#ff3b30;
+  --leaf-green:#2E7D32;
+  --leaf-yellow:#FFC107;
+  --track:#efe9ff;
+  --fill:#4b3aa6;
 }
 
-body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    margin: 0;
-    background-color: #222;
-    display: flex;
-    justify-content: center;
-    padding-top: 20px;
+*{box-sizing:border-box}
+
+body{
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  margin:0;background:#222;display:flex;justify-content:center;padding-top:20px;
 }
+#app-container{width:412px;height:892px;background:var(--background-color);
+  border-radius:40px;border:1px solid #444;box-shadow:0 0 30px rgba(255,255,255,.1);
+  overflow:hidden;display:flex;flex-direction:column;position:relative}
+.hidden{display:none !important}
 
-#app-container {
-    width: 412px;
-    height: 892px;
-    background-color: var(--background-color);
-    border-radius: 40px;
-    border: 1px solid #444;
-    box-shadow: 0 0 30px rgba(255,255,255,0.1);
-    position: relative;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
+.view{display:flex;flex-direction:column;height:100%}
+.app-header{display:flex;justify-content:space-between;align-items:center;
+  padding:15px 20px;border-bottom:1px solid var(--border-color);background:var(--background-color);z-index:10}
+.icon-button{background:none;border:0;font-size:1.5em;cursor:pointer}
+
+.mindful-break-chip{background:var(--light-purple);color:var(--primary-purple);padding:6px 12px;border-radius:20px;font-weight:500;cursor:pointer;display:flex;gap:6px;align-items:center}
+.task-list-container{padding:20px;overflow:auto}
+
+.task-item{background:#fff;border:1px solid var(--border-color);border-radius:8px;padding:12px 12px;display:flex;align-items:flex-start;gap:12px;margin-bottom:10px;position:relative}
+.task-item .checkbox{width:22px;height:22px;border:2px solid var(--border-color);border-radius:4px;display:inline-flex;justify-content:center;align-items:center;cursor:pointer;flex-shrink:0}
+.task-item.completed .checkbox{background:var(--primary-purple);border-color:var(--primary-purple);color:#fff}
+.task-item .task-item-content h3{margin:0 0 4px 0;font-size:1em}
+.task-item.completed .task-item-content h3{text-decoration:line-through;color:var(--light-text)}
+.task-item .task-item-content p{margin:0;color:var(--light-text);font-size:.85em}
+.task-item .right-icon{margin-left:auto;cursor:pointer;font-size:1.1em;line-height:1em;padding:6px}
+.task-item.completed .right-icon{color:var(--delete-red)}
+.status-line{margin-top:4px;color:var(--primary-purple);font-size:.85em;display:flex;gap:6px;align-items:center}
+
+.fab{position:absolute;bottom:30px;right:30px;width:56px;height:56px;border-radius:50%;border:0;background:var(--primary-purple);color:#fff;font-size:2em;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.2)}
+
+.tree-container-wrapper{flex:1;position:relative;overflow:hidden}
+#task-animation-bg{position:absolute;inset:0;background:#f0f4f0;background-size:cover;background-position:center;z-index:1}
+#leaf-fall-container{position:absolute;inset:0;z-index:2;pointer-events:none}
+
+.task-footer{padding:16px 20px;border-top:1px solid var(--border-color);background:var(--background-color);z-index:10}
+.time-remaining{font-size:1.4em;font-weight:700;margin-bottom:6px}
+.labels-row{display:flex;justify-content:space-between;color:var(--light-text);font-size:.9em;margin-bottom:8px}
+.bell{margin-right:4px}
+.progress-bar-container{position:relative;height:12px;border-radius:6px;background:transparent;margin-bottom:12px}
+.progress-track{position:absolute;inset:0;background:var(--track);border-radius:6px}
+.progress-fill{position:absolute;left:0;top:0;bottom:0;width:0%;background:var(--fill);border-radius:6px;transition:width .4s ease}
+.reminder-dots{position:absolute;inset:0;pointer-events:none}
+.reminder-dot{position:absolute;top:50%;transform:translate(-50%,-50%);width:6px;height:6px;border-radius:50%;background:#6f5ccf}
+
+.underbar-row{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.checkbox-lg{width:22px;height:22px;border-radius:4px;border:2px solid var(--border-color);background:#fff;cursor:pointer}
+.checkbox-lg.checked{background:var(--primary-purple);border-color:var(--primary-purple);color:#fff}
+.underbar-info h3{margin:0 0 2px 0}
+.underbar-info .under-duration{margin:0;color:var(--light-text);font-size:.9em}
+.edit-inline{margin-left:auto;background:none;border:0;cursor:pointer;font-size:1.2em}
+
+.task-controls{display:flex;gap:10px}
+.primary-button,.secondary-button,.delete-button{flex:1;padding:12px 14px;border-radius:8px;border:0;font-weight:700;cursor:pointer}
+.primary-button{background:var(--primary-purple);color:#fff}
+.secondary-button{background:#eee;color:var(--dark-text)}
+.delete-button{background:#eee;color:var(--delete-red)}
+.edit-footer{padding:16px 20px;display:flex;gap:10px}
+
+.form-container{padding:20px;display:flex;flex-direction:column;gap:12px}
+.field-label{font-weight:600;color:var(--dark-text)}
+.duration-input{display:flex;align-items:center;gap:10px;font-weight:700}
+.duration-input input{width:64px;text-align:center;font-size:1.2em;background:#f4f4f4;border:0;border-radius:8px;padding:6px}
+.duration-input span{color:var(--light-text)}
+.reminder-section{border-top:1px solid var(--border-color);padding-top:8px}
+.reminder-title{font-weight:600;margin-bottom:6px;color:var(--dark-text)}
+.reminder-list{display:flex;flex-direction:column;border:1px solid var(--border-color);border-radius:10px;overflow:hidden}
+.rem-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--border-color);cursor:pointer}
+.rem-row:last-child{border-bottom:none}
+.rem-row input[type="checkbox"]{appearance:none;width:18px;height:18px;border:2px solid var(--primary-purple);border-radius:50%;position:relative}
+.rem-row input[type="checkbox"]:checked{background:var(--primary-purple)}
+.rem-row input[type="checkbox"]:disabled{opacity:.35;cursor:not-allowed}
+.link-button{background:#fff;border:1px dashed var(--border-color);border-radius:8px;padding:8px 10px;color:var(--primary-purple);font-weight:600;cursor:pointer}
+
+.overlay{position:absolute;inset:0;background:rgba(255,255,255,.8);backdrop-filter:blur(4px);display:flex;justify-content:center;align-items:center;z-index:100}
+#mindful-leaf-container{position:absolute;inset:0;pointer-events:none}
+.overlay-content{text-align:center;z-index:2}
+.overlay-content .subtle{color:var(--light-text);margin:8px 0 12px 0}
+
+.modal{position:absolute;inset:0;background:rgba(0,0,0,.5);display:flex;justify-content:center;align-items:center;z-index:200}
+.modal-content{background:#fff;border-radius:12px;padding:20px;width:80%;max-width:320px;text-align:center}
+.modal-content button{width:100%;margin-top:10px}
+
+/* Leaves */
+.leaf{position:absolute;width:26px;height:30px;fill:var(--leaf-green);opacity:0;animation-iteration-count:1;will-change:transform}
+.leaf.yellow{fill:var(--leaf-yellow);transform:scale(1.1);z-index:10}
+.leaf.swirl-green{animation-name:swirl-green}
+.leaf.swirl-yellow{animation-name:swirl-yellow;animation-timing-function:ease-in-out}
+
+/* Animations */
+@keyframes fall{
+  0%{transform:translateY(0) translateX(0) rotate(0);opacity:1}
+  100%{transform:translateY(90vh) translateX(var(--x-end)) rotate(var(--rotate-end));opacity:0}
 }
-
-.hidden {
-    display: none !important;
+@keyframes swirl-green{
+  0%{transform:translate(var(--x-start),-10vh) rotate(0);opacity:0}
+  20%{opacity:1}
+  100%{transform:translate(var(--x-end),100vh) rotate(720deg);opacity:0}
 }
-
-/* ===== VIEWS & LAYOUT ===== */
-.view {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
+@keyframes swirl-yellow{
+  0%{transform:translate(50vw,-10vh) rotate(0) scale(1.1);opacity:0}
+  15%{opacity:1;transform:translate(60vw,20vh) rotate(90deg) scale(1.1)}
+  50%{transform:translate(20vw,50vh) rotate(270deg) scale(1.1)}
+  85%{transform:translate(50vw,80vh) rotate(450deg) scale(1.1)}
+  100%{transform:translate(40vw,100vh) rotate(540deg) scale(1.1);opacity:0}
 }
-
-.app-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 20px;
-    border-bottom: 1px solid var(--border-color);
-    flex-shrink: 0;
-    z-index: 10; /* Keep header above background animations */
-    background: var(--background-color);
-}
-
-main {
-    flex-grow: 1;
-    overflow-y: auto;
-}
-
-/* ===== TODAY VIEW ===== */
-.mindful-break-chip {
-    background-color: var(--light-purple);
-    color: var(--primary-purple);
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 0.9em;
-    font-weight: 500;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-.leaf-icon-chip {
-    color: var(--leaf-green);
-}
-
-.task-list-container {
-    padding: 20px;
-}
-
-.task-item {
-    background: white;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 15px;
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    position: relative;
-}
-
-.task-item.completed-flash {
-    background-color: var(--light-purple);
-    transition: background-color 0.2s ease-in-out;
-}
-
-.task-item .checkbox {
-    width: 24px;
-    height: 24px;
-    border: 2px solid var(--border-color);
-    border-radius: 50%;
-    margin-right: 15px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: white;
-    cursor: pointer;
-    flex-shrink: 0;
-}
-
-.task-item.completed .checkbox {
-    background-color: var(--primary-purple);
-    border-color: var(--primary-purple);
-}
-
-.task-item-content h3 { margin: 0 0 5px 0; font-size: 1em; }
-.task-item-content p { margin: 0; font-size: 0.85em; color: var(--light-text); }
-
-/* CHANGE 3: Strike-through for completed tasks */
-.task-item.completed .task-item-content h3 {
-    text-decoration: line-through;
-    color: var(--light-text);
-}
-
-.task-item .edit-icon { margin-left: auto; cursor: pointer; }
-
-.fab {
-    position: absolute;
-    bottom: 30px;
-    right: 30px;
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    background-color: var(--primary-purple);
-    color: white;
-    font-size: 2em;
-    border: none;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-    cursor: pointer;
-}
-
-/* ===== IN-TASK VIEW ===== */
-.tree-container-wrapper {
-    flex-grow: 1;
-    position: relative;
-    overflow: hidden;
-}
-
-/* CHANGE 1: New background container for your animation */
-#task-animation-bg {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    /* 
-       To add your animation, place the file in the same folder as your
-       HTML files and uncomment the following line.
-    */
-    /* background-image: url('your-animation-name.gif'); */
-    background-size: cover;
-    background-position: center;
-    background-color: #f0f4f0; /* A light green as a fallback */
-    z-index: 1;
-}
-
-#leaf-fall-container {
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    z-index: 2; /* Ensures leaves fall on top of the background */
-    pointer-events: none; /* Allows clicks to pass through */
-}
-
-.leaf {
-    position: absolute;
-    width: 26px; height: 30px;
-    fill: var(--leaf-green);
-    animation-timing-function: cubic-bezier(0.55, 0.085, 0.68, 0.53);
-    animation-iteration-count: 1;
-    will-change: transform;
-    opacity: 0;
-    animation-name: fall; /* Default animation */
-}
-
-.leaf.yellow {
-    fill: var(--leaf-yellow);
-    transform: scale(1.1); z-index: 10;
-}
-
-.task-footer {
-    padding: 20px;
-    border-top: 1px solid var(--border-color);
-    flex-shrink: 0;
-    z-index: 10; /* Keep footer above animations */
-    background: var(--background-color);
-}
-
-.progress-bar-container { width: 100%; height: 8px; background-color: #eee; border-radius: 4px; margin-bottom: 10px; }
-.progress-bar { width: 100%; height: 100%; background-color: var(--primary-purple); border-radius: 4px; transition: width 0.5s ease-out; }
-
-#time-display { font-size: 1.5em; font-weight: bold; margin-bottom: 5px; }
-#reminders-display { font-size: 0.9em; color: var(--light-text); margin-bottom: 15px; }
-.task-details-bottom h3 { margin: 0; }
-.task-details-bottom p { margin: 0 0 15px 0; color: var(--light-text); font-size: 0.9em; }
-.task-controls { display: flex; gap: 10px; }
-
-/* ===== EDIT/NEW TASK VIEW ===== */
-.form-container { padding: 20px; display: flex; flex-direction: column; gap: 15px; }
-#task-name-input, #task-notes-input { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1em; box-sizing: border-box; }
-
-.duration-input {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    font-size: 1.5em;
-    font-weight: bold;
-}
-.duration-input input {
-    width: 50px; font-size: inherit; font-weight: inherit;
-    text-align: center; border: none; background: #f4f4f4;
-    border-radius: 8px; padding: 5px;
-}
-.duration-input span { color: var(--light-text); font-size: 0.8em; }
-
-/* CHANGE 7: Styling for 50/50 buttons */
-.edit-footer {
-    padding: 20px;
-    display: flex;
-    gap: 10px;
-}
-.edit-footer .delete-button {
-    background-color: #eee; /* Changed from transparent for better visibility */
-    color: var(--delete-red);
-    flex: 1; /* Make it grow */
-}
-.edit-footer .primary-button {
-    flex: 1; /* Make it grow */
-}
-
-/* ===== BUTTONS & CONTROLS ===== */
-.icon-button { background: none; border: none; font-size: 1.5em; cursor: pointer; }
-.primary-button, .secondary-button, .delete-button { flex-grow: 1; padding: 15px; border-radius: 8px; border: none; font-size: 1em; font-weight: bold; cursor: pointer; }
-.primary-button { background-color: var(--primary-purple); color: white; }
-.primary-button:disabled { background-color: #ccc; cursor: not-allowed; }
-.secondary-button { background-color: #eee; color: var(--dark-text); }
-
-
-/* ===== OVERLAYS & MODALS ===== */
-.overlay {
-    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-    background-color: rgba(255, 255, 255, 0.8); backdrop-filter: blur(5px);
-    display: flex; flex-direction: column;
-    justify-content: center; align-items: center;
-    z-index: 100;
-}
-#mindful-leaf-container {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    z-index: 1; pointer-events: none;
-}
-.overlay-content { text-align: center; z-index: 2; }
-.overlay-content p { font-size: 1.5em; font-weight: bold; }
-.overlay-content .primary-button { width: 200px; }
-.mindful-prompt { position: absolute; bottom: 100px; width: 80%; }
-
-.modal {
-    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex; justify-content: center; align-items: center; z-index: 200;
-}
-.modal-content { background: white; padding: 20px; border-radius: 12px; text-align: center; width: 80%; max-width: 300px; }
-.modal-content p { margin-top: 0; }
-.modal-content button { width: 100%; margin-top: 10px; }
-
-/* ===== ANIMATIONS ===== */
-@keyframes fall {
-  0% { transform: translateY(0vh) translateX(0) rotate(0deg); opacity: 1; }
-  100% { transform: translateY(90vh) translateX(var(--x-end)) rotate(var(--rotate-end)); opacity: 0; }
-}
-
-/* CHANGE 5: New swirl animation for mindful break */
-@keyframes swirl-green {
-  0% { transform: translate(var(--x-start), -10vh) rotate(0deg); opacity: 0; }
-  20% { opacity: 1; }
-  100% { transform: translate(var(--x-end), 100vh) rotate(720deg); opacity: 0; }
-}
-
-@keyframes swirl-yellow {
-  0% { transform: translate(50vw, -10vh) rotate(0deg) scale(1.1); opacity: 0; }
-  15% { opacity: 1; transform: translate(60vw, 20vh) rotate(90deg) scale(1.1); }
-  50% { transform: translate(20vw, 50vh) rotate(270deg) scale(1.1); }
-  85% { transform: translate(50vw, 80vh) rotate(450deg) scale(1.1); }
-  100% { transform: translate(40vw, 100vh) rotate(540deg) scale(1.1); opacity: 0; }
-}
-
-.leaf.swirl-green { animation-name: swirl-green; }
-.leaf.swirl-yellow { animation-name: swirl-yellow; animation-timing-function: ease-in-out; }

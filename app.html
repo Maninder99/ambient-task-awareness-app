@@ -1,137 +1,192 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Mindful Task App</title>
-    <link rel="stylesheet" href="style.css">
-</head><body>
-
-    <div id="app-container">
-
-        <!-- ===== TODAY VIEW ===== -->
-        <div id="today-view" class="view">
-            <header class="app-header">
-                <button class="icon-button">&#9776;</button>
-                <h2>Today</h2>
-                <div class="mindful-break-chip">
-                    <span class="leaf-icon-chip">&#127810;</span> Mindful Break
-                </div>
-            </header>
-            <main id="task-list" class="task-list-container">
-                <!-- Tasks will be injected here by JS -->
-            </main>
-            <button id="add-task-btn" class="fab">+</button>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Mindful Task App</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app-container">
+    <!-- TODAY VIEW -->
+    <div id="today-view" class="view">
+      <header class="app-header">
+        <button class="icon-button" aria-label="menu">&#9776;</button>
+        <h2>Today</h2>
+        <div class="mindful-break-chip">
+          <span class="leaf-icon-chip">&#127810;</span> Mindful Break
         </div>
-
-        <!-- ===== IN-TASK VIEW ===== -->
-        <div id="task-view" class="view hidden">
-            <header class="app-header">
-                <button id="back-to-today-btn" class="icon-button">&#8592;</button>
-                <div class="mindful-break-chip">
-                    <span class="leaf-icon-chip">&#127810;</span> Mindful Break
-                </div>
-            </header>
-            <main class="tree-container-wrapper">
-                <!-- CHANGE 1: This div is now the background for your animation. -->
-                <div id="task-animation-bg"></div>
-                
-                <!-- This container is just for falling leaves, which appear ON TOP of the background. -->
-                <div id="leaf-fall-container"></div>
-            </main>
-            <footer class="task-footer">
-                <div class="progress-bar-container">
-                    <div id="progress-bar" class="progress-bar"></div>
-                </div>
-                <div id="time-display">10:00</div>
-                <div id="reminders-display">Reminders: 2</div>
-                <div class="task-details-bottom">
-                    <h3 id="active-task-name">Article Reading</h3>
-                    <p>Time Tracking</p>
-                </div>
-                <div class="task-controls">
-                    <button id="pause-btn" class="secondary-button">Pause</button>
-                    <button id="done-btn" class="primary-button">Done</button>
-                </div>
-            </footer>
-        </div>
-
-        <!-- ===== EDIT / NEW TASK VIEW ===== -->
-        <div id="edit-task-view" class="view hidden">
-            <header class="app-header">
-                <h2 id="edit-view-title">New Task</h2>
-                <button id="close-edit-view-btn" class="icon-button">&#10005;</button>
-            </header>
-            <main class="form-container">
-                <input type="text" id="task-name-input" placeholder="Enter a task name">
-                <!-- CHANGE 4: Added hours input -->
-                <div class="duration-input">
-                    <input type="number" id="task-duration-hr" value="0" min="0">
-                    <span>h</span>
-                    <input type="number" id="task-duration-min" value="0" min="0" max="59">
-                    <span>m</span>
-                    <input type="number" id="task-duration-sec" value="0" min="0" max="59">
-                    <span>s</span>
-                </div>
-                <p class="form-label">Reminders (automatically at x%)</p>
-                <!-- CHANGE 6: Reduced textarea rows -->
-                <textarea id="task-notes-input" placeholder="Add a custom reminder..." rows="2"></textarea>
-                
-                <button id="restart-task-btn" class="secondary-button hidden">Restart Task</button>
-            </main>
-            <!-- CHANGE 7: Buttons will now be 50/50 -->
-            <footer class="edit-footer">
-                 <button id="delete-task-btn" class="delete-button hidden">Delete</button>
-                 <button id="save-task-btn" class="primary-button" disabled>Save Task</button>
-            </footer>
-        </div>
-
-        <!-- ===== OVERLAYS & POPUPS ===== -->
-        <div id="pause-overlay" class="overlay hidden">
-            <div class="overlay-content">
-                <p>Paused</p>
-                <button id="resume-btn" class="primary-button">Resume</button>
-            </div>
-        </div>
-
-        <div id="mindful-break-overlay" class="overlay hidden">
-             <!-- This container is for the swirling leaves -->
-             <div id="mindful-leaf-container"></div>
-             <div class="overlay-content mindful-prompt">
-                <p>Follow the yellow leaf...</p>
-                <button id="end-mindful-break-btn" class="primary-button">End Break</button>
-            </div>
-        </div>
-        
-        <div id="confirmation-modal" class="modal hidden">
-            <div class="modal-content">
-                <p id="confirmation-message">Are you sure?</p>
-                <button id="confirm-action-btn" class="primary-button">Confirm</button>
-                <button id="cancel-action-btn" class="secondary-button">Cancel</button>
-            </div>
-        </div>
-        
-        <div id="add-time-prompt" class="modal hidden">
-             <div class="modal-content">
-                <p>Time is running low, do you need more time?</p>
-                <button id="add-15-min-btn" class="primary-button">Add 15 mins</button>
-            </div>
-        </div>
-
+      </header>
+      <main id="task-list" class="task-list-container"></main>
+      <button id="add-task-btn" class="fab" aria-label="add task">+</button>
     </div>
 
-    <!-- Leaf SVG template, no changes here -->
-    <svg width="0" height="0" style="position:absolute;z-index:-1;">
-      <defs>
-        <g id="leaf-shape" transform="rotate(45 15 15)">
-            <path d="M15.4,29.3C12.3,29.7,9,28.6,6.4,26.4c-4.2-3.6-6-9-5.4-14.2c0.2-1.8,0.9-3.6,2-5.1C4.4,5,6.2,3.3,8.3,2.2
-            c4.1-2.2,9-2.2,13.1,0c4.9,2.6,8,7.6,8.6,12.9c0.1,1.1,0,2.2-0.2,3.3C29,20.2,28.2,21.8,27,23.2c-2.4,2.9-5.8,4.9-9.5,5.7
-            C16.8,29,16.1,29.1,15.4,29.3z"/>
-        </g>
-      </defs>
-    </svg>
+    <!-- TASK VIEW -->
+    <div id="task-view" class="view hidden">
+      <header class="app-header">
+        <button id="back-to-today-btn" class="icon-button" aria-label="back">&#8592;</button>
+        <div class="mindful-break-chip">
+          <span class="leaf-icon-chip">&#127810;</span> Mindful Break
+        </div>
+      </header>
 
+      <main class="tree-container-wrapper">
+        <!-- Your custom background animation can go here -->
+        <div id="task-animation-bg"></div>
 
-    <script src="script.js"></script>
+        <!-- Falling leaves layer (on top of background) -->
+        <div id="leaf-fall-container"></div>
+      </main>
+
+      <footer class="task-footer">
+        <div id="time-display" class="time-remaining">10 m Remaining</div>
+        <div class="labels-row">
+          <div class="label-left">Time Tracking</div>
+          <div class="label-right">
+            <span class="bell">🔔</span> Reminders:
+            <span id="active-reminder-count">0</span>
+          </div>
+        </div>
+
+        <div class="progress-bar-container">
+          <div class="progress-track"></div>
+          <div id="reminder-dots" class="reminder-dots"></div>
+          <div id="progress-bar" class="progress-fill"></div>
+        </div>
+
+        <!-- Under the bar row -->
+        <div class="underbar-row">
+          <button id="active-checkbox" class="checkbox-lg" aria-label="mark done"></button>
+          <div class="underbar-info">
+            <h3 id="active-task-name">Task name</h3>
+            <p class="under-duration">
+              <span class="clock-icn">🕒</span>
+              Duration: <span id="active-duration">--</span>
+            </p>
+          </div>
+          <button id="in-task-edit-btn" class="edit-inline" aria-label="edit">&#9998;</button>
+        </div>
+
+        <div class="task-controls">
+          <button id="pause-btn" class="secondary-button">Pause</button>
+          <button id="done-btn" class="primary-button">Done</button>
+        </div>
+      </footer>
+    </div>
+
+    <!-- EDIT / NEW TASK VIEW -->
+    <div id="edit-task-view" class="view hidden">
+      <header class="app-header">
+        <h2 id="edit-view-title">New Task</h2>
+        <button id="close-edit-view-btn" class="icon-button" aria-label="close">&#10005;</button>
+      </header>
+      <main class="form-container">
+        <label class="field-label">Name</label>
+        <input type="text" id="task-name-input" placeholder="Enter a task name..." />
+
+        <label class="field-label">Duration:</label>
+        <div class="duration-input">
+          <input type="number" id="task-duration-hr" value="0" min="0" />
+          <span>Hour</span>
+          <input type="number" id="task-duration-min" value="10" min="0" max="59" />
+          <span>Minute</span>
+        </div>
+
+        <!-- Reminders -->
+        <div class="reminder-section">
+          <div class="reminder-title">
+            <span class="bell">🔔</span>
+            Reminders (automatically at end)
+          </div>
+
+          <div id="reminder-options" class="reminder-list">
+            <!-- Multi-select (styled like radios) so you can show multiple dots -->
+            <label class="rem-row">
+              <input type="checkbox" class="rem-choice" value="5400" />
+              <span>1 h 30 m before end</span>
+            </label>
+            <label class="rem-row">
+              <input type="checkbox" class="rem-choice" value="3600" />
+              <span>1 h before end</span>
+            </label>
+            <label class="rem-row">
+              <input type="checkbox" class="rem-choice" value="2700" />
+              <span>45 m before end</span>
+            </label>
+            <label class="rem-row">
+              <input type="checkbox" class="rem-choice" value="1800" />
+              <span>30 m before end</span>
+            </label>
+            <label class="rem-row">
+              <input type="checkbox" class="rem-choice" value="900" />
+              <span>15 m before end</span>
+            </label>
+            <label class="rem-row">
+              <input type="checkbox" class="rem-choice" value="300" />
+              <span>5 m before end</span>
+            </label>
+          </div>
+
+          <button id="add-custom-reminder" type="button" class="link-button">
+            + Custom reminder
+          </button>
+        </div>
+
+        <textarea id="task-notes-input" placeholder="Add a custom note..." rows="2"></textarea>
+
+        <button id="restart-task-btn" class="secondary-button hidden">Restart Task</button>
+      </main>
+
+      <footer class="edit-footer">
+        <button id="delete-task-btn" class="delete-button hidden">Delete</button>
+        <button id="save-task-btn" class="primary-button" disabled>Save Task</button>
+      </footer>
+    </div>
+
+    <!-- OVERLAYS & POPUPS -->
+    <div id="pause-overlay" class="overlay hidden">
+      <div class="overlay-content">
+        <p>Paused</p>
+        <button id="resume-btn" class="primary-button">Resume</button>
+      </div>
+    </div>
+
+    <div id="mindful-break-overlay" class="overlay hidden">
+      <div id="mindful-leaf-container"></div>
+      <div class="overlay-content mindful-prompt">
+        <p>Take a mindful break</p>
+        <div class="subtle">Paused countdown</div>
+        <button id="end-mindful-break-btn" class="primary-button">Resume</button>
+      </div>
+    </div>
+
+    <div id="confirmation-modal" class="modal hidden">
+      <div class="modal-content">
+        <p id="confirmation-message">Are you sure?</p>
+        <button id="confirm-action-btn" class="primary-button">Confirm</button>
+        <button id="cancel-action-btn" class="secondary-button">Cancel</button>
+      </div>
+    </div>
+
+    <div id="add-time-prompt" class="modal hidden">
+      <div class="modal-content">
+        <p>Time is running low, do you need more time?</p>
+        <button id="add-15-min-btn" class="primary-button">Add 15 mins</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaf shape -->
+  <svg width="0" height="0" style="position:absolute;z-index:-1;">
+    <defs>
+      <g id="leaf-shape" transform="rotate(45 15 15)">
+        <path d="M15.4,29.3C12.3,29.7,9,28.6,6.4,26.4c-4.2-3.6-6-9-5.4-14.2c0.2-1.8,0.9-3.6,2-5.1C4.4,5,6.2,3.3,8.3,2.2
+          c4.1-2.2,9-2.2,13.1,0c4.9,2.6,8,7.6,8.6,12.9c0.1,1.1,0,2.2-0.2,3.3C29,20.2,28.2,21.8,27,23.2c-2.4,2.9-5.8,4.9-9.5,5.7
+          C16.8,29,16.1,29.1,15.4,29.3z"/>
+      </g>
+    </defs>
+  </svg>
+
+  <script src="script.js"></script>
 </body>
 </html>
