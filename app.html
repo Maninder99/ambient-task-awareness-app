@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Mindful Task App</title>
     <link rel="stylesheet" href="style.css">
-</head>
-<body>
+</head><body>
 
     <div id="app-container">
 
@@ -33,12 +32,12 @@
                     <span class="leaf-icon-chip">&#127810;</span> Mindful Break
                 </div>
             </header>
-            <main id="tree-container" class="tree-container">
-                <!-- NEW Realistic Tree branch SVG -->
-                <svg id="tree-branch" viewBox="0 0 500 300" preserveAspectRatio="xMidYMin meet">
-                    <path d="M22.5,299.5 C22.5,299.5 62,267 84,248 C106,229 133.5,221.5 174,196 C214.5,170.5 249,158 287,131 C325,104 366.5,88.5 401.5,58.5 M174,196 C168,188 168.5,171.5 168,162 M140,165 C132,156.5 125.5,145 119.5,133.5 M287,131 C281.5,123 277.5,112 274,103 M250,110 C243,101 234,92.5 228,84 M355,95 C364,88 375,79.5 385,71.5 M401.5,58.5 C413.5,50 427,39 439.5,28.5 M401.5,58.5 C415,53.5 432,49 448,42 M460,37 C470,30.5 479,23.5 487.5,16.5" fill="none" stroke-width="5" stroke-linecap="round" />
-                </svg>
-                 <!-- Leaves will be added here by JS -->
+            <main class="tree-container-wrapper">
+                <!-- CHANGE 1: This div is now the background for your animation. -->
+                <div id="task-animation-bg"></div>
+                
+                <!-- This container is just for falling leaves, which appear ON TOP of the background. -->
+                <div id="leaf-fall-container"></div>
             </main>
             <footer class="task-footer">
                 <div class="progress-bar-container">
@@ -65,16 +64,22 @@
             </header>
             <main class="form-container">
                 <input type="text" id="task-name-input" placeholder="Enter a task name">
+                <!-- CHANGE 4: Added hours input -->
                 <div class="duration-input">
-                    <input type="number" id="task-duration-min" value="0" min="0">
-                    <span>:</span>
+                    <input type="number" id="task-duration-hr" value="0" min="0">
+                    <span>h</span>
+                    <input type="number" id="task-duration-min" value="0" min="0" max="59">
+                    <span>m</span>
                     <input type="number" id="task-duration-sec" value="0" min="0" max="59">
+                    <span>s</span>
                 </div>
                 <p class="form-label">Reminders (automatically at x%)</p>
-                <textarea id="task-notes-input" placeholder="Add a custom reminder..." rows="3"></textarea>
+                <!-- CHANGE 6: Reduced textarea rows -->
+                <textarea id="task-notes-input" placeholder="Add a custom reminder..." rows="2"></textarea>
                 
                 <button id="restart-task-btn" class="secondary-button hidden">Restart Task</button>
             </main>
+            <!-- CHANGE 7: Buttons will now be 50/50 -->
             <footer class="edit-footer">
                  <button id="delete-task-btn" class="delete-button hidden">Delete</button>
                  <button id="save-task-btn" class="primary-button" disabled>Save Task</button>
@@ -90,14 +95,11 @@
         </div>
 
         <div id="mindful-break-overlay" class="overlay hidden">
-             <div id="mindful-tree-container" class="tree-container">
-                 <svg id="mindful-tree-branch" viewBox="0 0 500 300" preserveAspectRatio="xMidYMin meet">
-                    <path d="M22.5,299.5 C22.5,299.5 62,267 84,248 C106,229 133.5,221.5 174,196 C214.5,170.5 249,158 287,131 C325,104 366.5,88.5 401.5,58.5 M174,196 C168,188 168.5,171.5 168,162 M140,165 C132,156.5 125.5,145 119.5,133.5 M287,131 C281.5,123 277.5,112 274,103 M250,110 C243,101 234,92.5 228,84 M355,95 C364,88 375,79.5 385,71.5 M401.5,58.5 C413.5,50 427,39 439.5,28.5 M401.5,58.5 C415,53.5 432,49 448,42 M460,37 C470,30.5 479,23.5 487.5,16.5" fill="none" stroke-width="5" stroke-linecap="round" />
-                </svg>
-             </div>
+             <!-- This container is for the swirling leaves -->
+             <div id="mindful-leaf-container"></div>
              <div class="overlay-content mindful-prompt">
                 <p>Follow the yellow leaf...</p>
-                <button id="end-mindful-break-btn" class="primary-button">Take a mindful breath</button>
+                <button id="end-mindful-break-btn" class="primary-button">End Break</button>
             </div>
         </div>
         
@@ -118,7 +120,7 @@
 
     </div>
 
-    <!-- NEW Leaf SVG template, hidden -->
+    <!-- Leaf SVG template, no changes here -->
     <svg width="0" height="0" style="position:absolute;z-index:-1;">
       <defs>
         <g id="leaf-shape" transform="rotate(45 15 15)">
