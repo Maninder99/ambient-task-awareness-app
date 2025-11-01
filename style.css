@@ -42,6 +42,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-s
 #task-animation-bg{position:absolute;inset:0;background:#f0f4f0;background-size:cover;background-position:center;z-index:1}
 #leaf-fall-container{position:absolute;inset:0;z-index:2;pointer-events:none}
 
+/* Request 1: message */
+.projection-msg{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  color:#d32f2f;font-weight:700;text-align:center;padding:0 16px;z-index:3;pointer-events:none;
+}
+
 .task-footer{padding:16px 20px;border-top:1px solid var(--border-color);background:var(--background-color);z-index:10}
 .time-remaining{font-size:1.4em;font-weight:700;margin-bottom:6px}
 .time-remaining.overdue{color:var(--overdue-red)}
@@ -90,9 +96,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-s
 .rem-row input[type="checkbox"]{appearance:none;width:18px;height:18px;border:2px solid var(--primary-purple);border-radius:50%;position:relative}
 .rem-row input[type="checkbox"]:checked{background:var(--primary-purple)}
 .rem-row input[type="checkbox"]:disabled{opacity:.35;cursor:not-allowed}
+.link-button{background:#fff;border:1px dashed var(--border-color);border-radius:8px;padding:8px 10px;color:var(--primary-purple);font-weight:600;cursor:pointer}
+
+/* delete button for custom reminder rows */
+.rem-row .remove-rem{
+  margin-left:auto;background:#eee;border:0;border-radius:8px;padding:6px 8px;cursor:pointer;color:#555
+}
+.rem-row.custom span{font-style:italic}
+
 #task-notes-input{resize:vertical}
 
-/* Overlays (pause / mindful) */
+/* Overlays */
 .overlay{position:absolute;inset:0;background:rgba(255,255,255,.75);backdrop-filter:blur(6px);display:flex;justify-content:center;align-items:center;z-index:200}
 .overlay-card{background:#fff;border-radius:12px;padding:20px;width:80%;max-width:340px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.15)}
 .overlay-card .overlay-title{margin:0 0 12px 0;font-weight:700}

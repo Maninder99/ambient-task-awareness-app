@@ -31,8 +31,12 @@
       </header>
 
       <main class="tree-container-wrapper">
+        <!-- Background area -->
         <div id="task-animation-bg"></div>
+        <!-- Shaky leaves layer -->
         <div id="leaf-fall-container"></div>
+        <!-- Request 1: Projection message -->
+        <div id="projection-msg" class="projection-msg">Projection mirror in app coming soon...</div>
       </main>
 
       <footer class="task-footer">
@@ -94,6 +98,7 @@
           <span>Minute</span>
         </div>
 
+        <!-- Reminders (with custom + delete for custom) -->
         <div class="reminder-section">
           <div class="reminder-title">
             <span class="bell">🔔</span>
@@ -126,6 +131,10 @@
               <span>5 m before end</span>
             </label>
           </div>
+
+          <button id="add-custom-reminder" type="button" class="link-button">
+            + Custom reminder
+          </button>
         </div>
 
         <textarea id="task-notes-input" placeholder="Add a custom note..." rows="2"></textarea>
@@ -164,7 +173,7 @@
       </div>
     </div>
 
-    <!-- Deleted tasks overlay (from hamburger menu) -->
+    <!-- Deleted tasks overlay -->
     <div id="deleted-overlay" class="overlay hidden">
       <div class="overlay-card">
         <p class="overlay-title">Deleted tasks</p>

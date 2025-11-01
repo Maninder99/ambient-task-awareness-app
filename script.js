@@ -1,7 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // For fast testing: set TICK_MS=1000 and STEP_SECONDS=60 (1s = 1min)
+  // For quick demo use: TICK_MS=1000 and STEP_SECONDS=60 (1s = 1 minute)
   const TICK_MS = 60000;
   const STEP_SECONDS = 60;
+
+  // Default reminder values (seconds)
+  const DEFAULT_REMINDER_VALUES = [5400,3600,2700,1800,900,300];
 
   // Views
   const views = {
@@ -42,6 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const deleteTaskBtn = document.getElementById('delete-task-btn');
   const restartTaskBtn = document.getElementById('restart-task-btn');
   const reminderOptions = document.getElementById('reminder-options');
+  const addCustomReminderBtn = document.getElementById('add-custom-reminder');
 
   // Overlays
   const mindfulBreakChips = document.querySelectorAll('.mindful-break-chip');
@@ -69,18 +73,19 @@ document.addEventListener('DOMContentLoaded', () => {
   let mindfulInterval = null;
   let overdueShown = false;
 
-  // Storage helpers
+  // Storage
   const saveTasks = () => localStorage.setItem('mindfulTasks', JSON.stringify(tasks));
   const loadTasks = () => tasks = JSON.parse(localStorage.getItem('mindfulTasks') || '[]');
   const saveDeleted = () => localStorage.setItem('mindfulDeleted', JSON.stringify(deletedTasks));
   const loadDeleted = () => deletedTasks = JSON.parse(localStorage.getItem('mindfulDeleted') || '[]');
 
-  // UI helpers
+  // Helpers
   const showView = (name) => { Object.values(views).forEach(v => v.classList.add('hidden')); views[name].classList.remove('hidden'); };
-  const formatHM = (sec) => { const abs = Math.max(0, Math.floor(sec)); const h = Math.floor(abs/3600); const m = Math.floor((abs%3600)/60); return h>0?`${h} h ${m} m`:`${m} m`; };
+  const formatHM = (sec) => { const abs = Math.max(0, Math.floor(sec)); const h = Math.floor(abs/3600), m = Math.floor((abs%3600)/60); return h>0?`${h} h ${m} m`:`${m} m`; };
+  const formatOffset = (s) => { const h = Math.floor(s/3600), m = Math.floor((s%3600)/60); return h>0 ? `${h} h ${m} m before end` : `${m} m before end`; };
   const formatDateTime = (ms) => new Date(ms).toLocaleString();
 
-  // Today list
+  // Today render
   const renderTodayView = () => {
     taskList.innerHTML = '';
     tasks.forEach(task => {
@@ -88,16 +93,19 @@ document.addEventListener('DOMContentLoaded', () => {
       row.className = 'task-item';
       if (task.status === 'completed') row.classList.add('completed');
 
-      const statusLine =
-        (task.status === 'running' || task.status === 'paused')
-          ? `<div class="status-line" style="${task.remainingTime<0?'color:#b00020':''}">
-               <span>🕑</span> ${
-                 task.remainingTime >= 0
-                   ? `Started: ${formatHM(task.remainingTime)} remaining`
-                   : `Overdue: ${formatHM(-task.remainingTime)}`
-               }
-             </div>`
-          : '';
+      // Request 2: only show remaining line if remainingTime != totalDuration (or overdue)
+      const showRemainingLine = (task.status === 'running' || task.status === 'paused') &&
+                                (task.remainingTime !== task.totalDuration);
+
+      const statusLine = showRemainingLine
+        ? `<div class="status-line" style="${task.remainingTime<0?'color:#b00020':''}">
+             <span>🕑</span> ${
+               task.remainingTime >= 0
+                 ? `Started: ${formatHM(task.remainingTime)} remaining`
+                 : `Overdue: ${formatHM(-task.remainingTime)}`
+             }
+           </div>`
+        : '';
 
       row.innerHTML = `
         <div class="checkbox">${task.status === 'completed' ? '✓' : ''}</div>
@@ -121,7 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   };
 
-  // Deleted list overlay
+  // Deleted tasks overlay
   const renderDeletedList = () => {
     deletedListEl.innerHTML = '';
     if (deletedTasks.length === 0) {
@@ -139,52 +147,77 @@ document.addEventListener('DOMContentLoaded', () => {
         <button class="restore-btn">Restore</button>
       `;
       row.querySelector('.restore-btn').addEventListener('click', () => {
-        // Restore as paused with full remaining time
         tasks.push({
-          id: Date.now(),
-          name: d.name,
-          totalDuration: d.totalDuration,
-          remainingTime: d.totalDuration,
-          status: 'paused',
-          reminders: d.reminders || []
+          id: Date.now(), name: d.name, totalDuration: d.totalDuration,
+          remainingTime: d.totalDuration, status:'paused', reminders: d.reminders || []
         });
-        // remove from deleted
         deletedTasks = deletedTasks.filter(x => x.deletedAt !== d.deletedAt);
-        saveTasks(); saveDeleted();
-        renderDeletedList();
-        renderTodayView();
+        saveTasks(); saveDeleted(); renderDeletedList(); renderTodayView();
       });
       deletedListEl.appendChild(row);
     });
   };
 
-  // Task CRUD
+  // CRUD
   const deleteTask = (id) => {
     const t = tasks.find(x => x.id === id);
     if (!t) return;
     deletedTasks.push({ ...t, deletedAt: Date.now() });
     tasks = tasks.filter(x => x.id !== id);
-    if (activeTask && activeTask.id === id) {
-      clearInterval(timerInterval); timerInterval = null; activeTask = null;
-    }
+    if (activeTask && activeTask.id === id) { clearInterval(timerInterval); timerInterval = null; activeTask = null; }
     saveDeleted(); saveTasks(); renderTodayView();
   };
 
   const toggleComplete = (id) => {
-    const t = tasks.find(x => x.id === id);
-    if (!t) return;
-    if (t.status === 'completed') { t.status = 'paused'; t.remainingTime = t.totalDuration; }
-    else { t.status = 'completed'; t.remainingTime = 0; if (activeTask && activeTask.id === id) { clearInterval(timerInterval); timerInterval = null; activeTask = null; } }
+    const t = tasks.find(x => x.id === id); if (!t) return;
+    if (t.status === 'completed') { t.status='paused'; t.remainingTime=t.totalDuration; }
+    else { t.status='completed'; t.remainingTime=0; if (activeTask && activeTask.id===id){ clearInterval(timerInterval); timerInterval=null; activeTask=null; } }
     saveTasks(); renderTodayView();
   };
 
   // Edit/New
+  const ensureCustomRowForOffset = (sec) => {
+    if (DEFAULT_REMINDER_VALUES.includes(sec)) return;
+    if (reminderOptions.querySelector(`.rem-choice[value="${sec}"]`)) return;
+    const label = document.createElement('label');
+    label.className = 'rem-row custom';
+    label.innerHTML = `
+      <input type="checkbox" class="rem-choice" value="${sec}" checked />
+      <span>${formatOffset(sec)}</span>
+      <button type="button" class="remove-rem" title="Remove">×</button>
+    `;
+    reminderOptions.appendChild(label);
+  };
+
+  // Deleting custom rows (event delegation)
+  reminderOptions.addEventListener('click', (e) => {
+    if (e.target.classList.contains('remove-rem')) {
+      e.preventDefault();
+      const label = e.target.closest('.rem-row');
+      label?.remove();
+    }
+  });
+
+  addCustomReminderBtn.addEventListener('click', () => {
+    const mins = prompt('Add reminder: minutes before end');
+    if (mins === null) return;
+    const m = parseInt(mins, 10);
+    if (isNaN(m) || m < 1) return alert('Enter a valid number of minutes (>=1)');
+    const sec = m*60;
+    ensureCustomRowForOffset(sec);
+  });
+
   const getEditDurationSeconds = () => {
     const h = parseInt(durationHrInput.value) || 0;
     const m = parseInt(durationMinInput.value) || 0;
     return h*3600 + m*60;
   };
-  const setSelectedReminderOffsets = (offs=[]) => { [...reminderOptions.querySelectorAll('.rem-choice')].forEach(i => i.checked = offs.includes(parseInt(i.value))); };
+  const setSelectedReminderOffsets = (offs=[]) => {
+    // Ensure we render custom rows for any non-default offsets
+    offs.forEach(o => ensureCustomRowForOffset(o));
+    // Then set checkmarks
+    [...reminderOptions.querySelectorAll('.rem-choice')].forEach(i => i.checked = offs.includes(parseInt(i.value)));
+  };
   const getSelectedReminderOffsets = () => [...reminderOptions.querySelectorAll('.rem-choice:checked')].map(i => parseInt(i.value));
   const refreshReminderOptionsUI = (total) => { [...reminderOptions.querySelectorAll('.rem-choice')].forEach(i => i.disabled = parseInt(i.value) >= total); };
   const validateDurationInput = () => {
@@ -212,7 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
       editViewTitle.textContent = 'New Task';
       taskNameInput.value = '';
       durationHrInput.value = 1; durationMinInput.value = 0;
-      setSelectedReminderOffsets([300]);
+      setSelectedReminderOffsets([300]); // default 5m
       refreshReminderOptionsUI(getEditDurationSeconds());
     }
     validateDurationInput();
@@ -227,10 +260,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (editingTaskId) {
       const t = tasks.find(x => x.id === editingTaskId);
-      const oldTotal = t.totalDuration;
-      const oldRemaining = t.remainingTime;
-      // Compute elapsed and recalc remaining so "Started: ... remaining" updates correctly
-      const elapsed = oldTotal - oldRemaining; // works for overdue too (oldRemaining can be negative)
+      // Recalculate remaining to reflect new total (preserve elapsed/overdue)
+      const elapsed = t.totalDuration - t.remainingTime;
       const newRemaining = newTotal - elapsed;
 
       t.name = name;
@@ -238,7 +269,6 @@ document.addEventListener('DOMContentLoaded', () => {
       t.reminders = reminders;
       t.remainingTime = newRemaining;
 
-      // If this is the active task, mirror changes
       if (activeTask && activeTask.id === editingTaskId) {
         activeTask.name = name;
         activeTask.totalDuration = newTotal;
@@ -249,16 +279,13 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } else {
       tasks.push({
-        id: Date.now(),
-        name,
-        totalDuration: newTotal,
-        remainingTime: newTotal,
-        status: 'paused',
-        reminders
+        id: Date.now(), name,
+        totalDuration: newTotal, remainingTime: newTotal,
+        status: 'paused', reminders
       });
     }
     saveTasks();
-    renderTodayView();   // ensure home screen shows updated "Started: ..."
+    renderTodayView(); // Request 1/2 ensure list updates immediately
     showView('today');
   };
 
@@ -341,20 +368,18 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(()=>leaf.remove(), d*1000);
   };
 
-  // Timer control
+  // Timer
   const startTicking = () => {
     clearInterval(timerInterval);
     overdueShown = activeTask.remainingTime <= 0;
-    if (overdueShown) overdueOverlay.classList.remove('hidden'); // keep background visible
+    if (overdueShown) overdueOverlay.classList.remove('hidden');
 
     timerInterval = setInterval(() => {
       activeTask.remainingTime -= STEP_SECONDS;
-
       if (activeTask.remainingTime <= 0 && !overdueShown) {
         overdueShown = true;
-        overdueOverlay.classList.remove('hidden');  // keep ticking while visible
+        overdueOverlay.classList.remove('hidden'); // continue ticking
       }
-
       updateTimerDisplay(); saveTasks();
       dropLeaf({parent: leafFallContainer});
     }, TICK_MS);
@@ -367,12 +392,10 @@ document.addEventListener('DOMContentLoaded', () => {
     saveTasks();
   };
 
-  // Start a task
+  // Start task
   const startTask = (id) => {
-    const t = tasks.find(x => x.id === id);
-    if (!t) return;
-    activeTask = t;
-    activeTask.status = 'running';
+    const t = tasks.find(x => x.id === id); if (!t) return;
+    activeTask = t; activeTask.status = 'running';
 
     activeTaskNameEl.textContent = activeTask.name;
     activeDurationEl.textContent = formatHM(activeTask.totalDuration);
@@ -389,7 +412,7 @@ document.addEventListener('DOMContentLoaded', () => {
     startTicking();
   };
 
-  // Complete active task (Done + big checkbox)
+  // Complete active
   function completeActive() {
     if (!activeTask) return;
     activeTask.status = 'completed';
@@ -405,32 +428,16 @@ document.addEventListener('DOMContentLoaded', () => {
   inTaskEditBtn.addEventListener('click', () => activeTask && openEditView(activeTask.id));
 
   // Pause overlay
-  pauseBtn.addEventListener('click', () => {
-    if (!activeTask) return;
-    pauseNow();
-    pauseOverlay.classList.remove('hidden');
-  });
-  resumeBtn.addEventListener('click', () => {
-    if (!activeTask) return;
-    pauseOverlay.classList.add('hidden');
-    activeTask.status = 'running';
-    pauseBtn.textContent = 'Pause';
-    startTicking();
-  });
+  pauseBtn.addEventListener('click', () => { if (!activeTask) return; pauseNow(); pauseOverlay.classList.remove('hidden'); });
+  resumeBtn.addEventListener('click', () => { if (!activeTask) return; pauseOverlay.classList.add('hidden'); activeTask.status='running'; pauseBtn.textContent='Pause'; startTicking(); });
 
-  // Back = pause + go to Today
-  backToTodayBtn.addEventListener('click', () => {
-    if (activeTask) pauseNow();
-    pauseOverlay.classList.add('hidden');
-    overdueOverlay.classList.add('hidden');
-    renderTodayView(); showView('today');
-  });
+  // Back
+  backToTodayBtn.addEventListener('click', () => { if (activeTask) pauseNow(); pauseOverlay.classList.add('hidden'); overdueOverlay.classList.add('hidden'); renderTodayView(); showView('today'); });
 
   // Mindful break
   mindfulBreakChips.forEach(c => c.addEventListener('click', () => {
     if (activeTask) pauseNow();
     mindfulOverlay.classList.remove('hidden');
-
     clearInterval(mindfulInterval);
     mindfulInterval = setInterval(() => dropLeaf({parent: mindfulLeafContainer, isSwirl:true}), 500);
     setTimeout(() => dropLeaf({parent: mindfulLeafContainer, isSwirl:true, isYellow:true}), 1500);
@@ -439,15 +446,10 @@ document.addEventListener('DOMContentLoaded', () => {
     clearInterval(mindfulInterval);
     mindfulOverlay.classList.add('hidden');
     setTimeout(()=> mindfulLeafContainer.innerHTML='', 500);
-    if (activeTask) {
-      activeTask.status = 'running';
-      pauseBtn.textContent = 'Pause';
-      startTicking();
-      showView('task');
-    }
+    if (activeTask) { activeTask.status='running'; pauseBtn.textContent='Pause'; startTicking(); showView('task'); }
   });
 
-  // Overdue overlay: Add 15 minutes (timer keeps ticking)
+  // Overdue overlay add 15 min
   overdueAdd15Btn.addEventListener('click', () => {
     if (!activeTask) { overdueOverlay.classList.add('hidden'); return; }
     activeTask.remainingTime += 15*60;
@@ -456,20 +458,15 @@ document.addEventListener('DOMContentLoaded', () => {
     updateTimerDisplay(); saveTasks();
   });
 
-  // Menu – show deleted tasks
-  menuBtn.addEventListener('click', () => {
-    renderDeletedList();
-    deletedOverlay.classList.remove('hidden');
-  });
+  // Menu: deleted tasks
+  menuBtn.addEventListener('click', () => { renderDeletedList(); deletedOverlay.classList.remove('hidden'); });
   closeDeletedBtn.addEventListener('click', () => deletedOverlay.classList.add('hidden'));
 
-  // Initial data (Bike Sketch is pre-overdue for testing)
+  // Initial data: Request 5 – only Article Reading on homepage
   const setupDefault = () => {
     localStorage.clear();
     tasks = [
-      { id:1, name:'Article Reading',        totalDuration:600,  remainingTime:600,  status:'paused', reminders:[300] },
-      { id:2, name:'Programming exercises',  totalDuration:7200, remainingTime:7200, status:'paused', reminders:[1800,900] },
-      { id:3, name:'Bike Sketch',            totalDuration:60,   remainingTime:-180, status:'paused', reminders:[] } // overdue
+      { id:1, name:'Article Reading', totalDuration:600, remainingTime:600, status:'paused', reminders:[300] }
     ];
     deletedTasks = [];
     saveTasks(); saveDeleted();
