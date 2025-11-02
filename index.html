@@ -31,16 +31,21 @@
       </header>
 
       <main class="tree-container-wrapper">
-        <!-- Background area -->
         <div id="task-animation-bg"></div>
-        <!-- Shaky leaves layer -->
         <div id="leaf-fall-container"></div>
-        <!-- Request 1: Projection message -->
         <div id="projection-msg" class="projection-msg">Projection mirror in app coming soon...</div>
+
+        <!-- Reminder toast -->
+        <div id="reminder-toast" class="reminder-toast hidden">
+          <div class="toast-content">
+            <span class="toast-bell">🔔</span>
+            <span id="toast-text">This is your 5 minutes reminder</span>
+          </div>
+        </div>
       </main>
 
       <footer class="task-footer">
-        <div id="time-display" class="time-remaining">~ 10 m Remaining</div>
+        <div id="time-display" class="time-remaining">~ 10 m 00 s Remaining</div>
 
         <div id="overdue-badge" class="overdue-badge hidden">
           <span class="exclam">!</span>
@@ -98,7 +103,7 @@
           <span>Minute</span>
         </div>
 
-        <!-- Reminders (with custom + delete for custom) -->
+        <!-- Reminders (with custom + delete) -->
         <div class="reminder-section">
           <div class="reminder-title">
             <span class="bell">🔔</span>
@@ -130,21 +135,26 @@
               <input type="checkbox" class="rem-choice" value="300" />
               <span>5 m before end</span>
             </label>
+            <!-- Request 3: 2 m before end (8-min mark on a 10-min task) -->
+            <label class="rem-row">
+              <input type="checkbox" class="rem-choice" value="120" />
+              <span>2 m before end</span>
+            </label>
           </div>
 
-          <button id="add-custom-reminder" type="button" class="link-button">
-            + Custom reminder
-          </button>
+          <button id="add-custom-reminder" type="button" class="link-button">+ Custom reminder</button>
         </div>
 
-        <textarea id="task-notes-input" placeholder="Add a custom note..." rows="2"></textarea>
-
-        <button id="restart-task-btn" class="secondary-button hidden">Restart Task</button>
+        <!-- Restart (same size as others, full width) -->
+        <button id="restart-task-btn" class="secondary-button restart-btn hidden">Restart Task</button>
       </main>
 
       <footer class="edit-footer">
-        <button id="delete-task-btn" class="delete-button hidden">Delete</button>
-        <button id="save-task-btn" class="primary-button" disabled>Save Task</button>
+        <button id="delete-task-btn" class="link-danger hidden">Delete</button>
+        <div class="edit-actions">
+          <button id="cancel-task-btn" class="secondary-button">Cancel</button>
+          <button id="save-task-btn" class="primary-button" disabled>Save Task</button>
+        </div>
       </footer>
     </div>
 
@@ -156,11 +166,13 @@
       </div>
     </div>
 
+    <!-- Mindful break with instruction (Request 8) -->
     <div id="mindful-break-overlay" class="overlay hidden">
       <div id="mindful-leaf-container"></div>
       <div class="overlay-card">
-        <p class="overlay-title">Take a mindful break</p>
-        <div class="subtle">Paused countdown</div>
+        <p class="overlay-title" style="color:#5a36ff;font-weight:800">Look up and follow the yellow leaf</p>
+        <div style="font-size:28px;margin:6px 0">🍃 <span style="color:#FFC107">🍂</span> 🍃</div>
+        <div class="subtle">Take a mindful break — Paused countdown</div>
         <button id="end-mindful-break-btn" class="primary-button">Resume</button>
       </div>
     </div>
@@ -179,6 +191,21 @@
         <p class="overlay-title">Deleted tasks</p>
         <div id="deleted-list" class="overlay-list"></div>
         <button id="close-deleted" class="primary-button">Close</button>
+      </div>
+    </div>
+
+    <!-- Request 9: in‑app custom reminder modal -->
+    <div id="custom-reminder-modal" class="overlay hidden">
+      <div class="overlay-card">
+        <p class="overlay-title">Add custom reminder</p>
+        <div style="display:flex;gap:10px;justify-content:center;align-items:center">
+          <input type="number" id="custom-rem-min" min="1" value="2" style="width:80px;padding:8px;border:1px solid #ddd;border-radius:8px" />
+          <span>minutes before end</span>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:12px">
+          <button id="custom-rem-cancel" class="secondary-button">Cancel</button>
+          <button id="custom-rem-add" class="primary-button">Add</button>
+        </div>
       </div>
     </div>
   </div>

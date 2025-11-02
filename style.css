@@ -38,16 +38,28 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-s
 
 .fab{position:absolute;bottom:30px;right:30px;width:56px;height:56px;border-radius:50%;border:0;background:var(--primary-purple);color:#fff;font-size:2em;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.2)}
 
-.tree-container-wrapper{flex:1;position:relative;overflow:hidden}
+.tree-container-wrapper{flex:1;position:relative;overflow:hidden;background:#f1f5f1}
 #task-animation-bg{position:absolute;inset:0;background:#f0f4f0;background-size:cover;background-position:center;z-index:1}
 #leaf-fall-container{position:absolute;inset:0;z-index:2;pointer-events:none}
 
-/* Request 1: message */
+/* Request 1: projection text */
 .projection-msg{
   position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
   color:#d32f2f;font-weight:700;text-align:center;padding:0 16px;z-index:3;pointer-events:none;
 }
 
+/* Reminder toast */
+.reminder-toast{
+  position:absolute;left:50%;bottom:120px;transform:translateX(-50%);
+  z-index:5;pointer-events:none;
+}
+.toast-content{
+  background:#ffffff; border:1px solid #e6ddff; box-shadow:0 10px 30px rgba(0,0,0,.12);
+  border-radius:12px; padding:10px 14px; color:#5a36ff; font-weight:700; display:flex; align-items:center; gap:8px;
+}
+.toast-bell{font-size:18px}
+
+/* Footer */
 .task-footer{padding:16px 20px;border-top:1px solid var(--border-color);background:var(--background-color);z-index:10}
 .time-remaining{font-size:1.4em;font-weight:700;margin-bottom:6px}
 .time-remaining.overdue{color:var(--overdue-red)}
@@ -60,7 +72,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-s
 
 .progress-bar-container{position:relative;height:12px;border-radius:6px;background:transparent;margin-bottom:12px}
 .progress-track{position:absolute;inset:0;background:var(--track);border-radius:6px}
-.progress-fill{position:absolute;left:0;top:0;bottom:0;width:0%;background:var(--fill);border-radius:6px;transition:width .4s ease}
+.progress-fill{position:absolute;left:0;top:0;bottom:0;width:0%;background:var(--fill);border-radius:6px;transition:width .2s linear}
 .progress-bar-container.overdue .progress-track{background:var(--overdue-bg)}
 .progress-bar-container.overdue .progress-fill{background:var(--overdue-red)}
 
@@ -79,9 +91,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-s
 .primary-button{background:var(--primary-purple);color:#fff}
 .secondary-button{background:#eee;color:var(--dark-text)}
 .delete-button{background:#eee;color:var(--delete-red)}
-.edit-footer{padding:16px 20px;display:flex;gap:10px}
 
-/* Scrollable edit form */
+/* Edit screen */
 .form-container{padding:20px;display:flex;flex-direction:column;gap:12px;flex:1;min-height:0;overflow:auto}
 .field-label{font-weight:600;color:var(--dark-text)}
 .duration-input{display:flex;align-items:center;gap:10px;font-weight:700;flex-wrap:wrap}
@@ -97,14 +108,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-s
 .rem-row input[type="checkbox"]:checked{background:var(--primary-purple)}
 .rem-row input[type="checkbox"]:disabled{opacity:.35;cursor:not-allowed}
 .link-button{background:#fff;border:1px dashed var(--border-color);border-radius:8px;padding:8px 10px;color:var(--primary-purple);font-weight:600;cursor:pointer}
-
-/* delete button for custom reminder rows */
-.rem-row .remove-rem{
-  margin-left:auto;background:#eee;border:0;border-radius:8px;padding:6px 8px;cursor:pointer;color:#555
-}
+.rem-row .remove-rem{margin-left:auto;background:#eee;border:0;border-radius:8px;padding:6px 8px;cursor:pointer;color:#555}
 .rem-row.custom span{font-style:italic}
 
-#task-notes-input{resize:vertical}
+.edit-footer{padding:12px 20px;display:flex;flex-direction:column;gap:10px}
+.link-danger{background:none;border:none;color:var(--delete-red);text-align:left;font-weight:700;cursor:pointer;padding:6px 0}
+.edit-actions{display:flex;gap:10px}
+.restart-btn{width:100%}
 
 /* Overlays */
 .overlay{position:absolute;inset:0;background:rgba(255,255,255,.75);backdrop-filter:blur(6px);display:flex;justify-content:center;align-items:center;z-index:200}
@@ -112,18 +122,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-s
 .overlay-card .overlay-title{margin:0 0 12px 0;font-weight:700}
 .overlay-card .subtle{color:var(--light-text);margin:8px 0 12px 0}
 .overdue-card{background:var(--overdue-bg)}
-
-/* Overdue overlay keeps background visible */
 .overlay.clear{background:transparent;backdrop-filter:none;pointer-events:none}
 .overlay.clear .overlay-card{pointer-events:auto}
 
-/* Deleted list inside overlay */
+/* Deleted overlay */
 .overlay-list{max-height:55vh;overflow:auto;text-align:left}
 .deleted-item{display:flex;gap:10px;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border-color)}
 .deleted-item .meta{color:var(--light-text);font-size:.85em}
 .restore-btn{background:#eee;border:0;border-radius:8px;padding:6px 10px;cursor:pointer}
 
-/* Shaky leaves */
+/* Leaves (shaky) */
 .leaf{position:absolute;width:26px;height:30px;color:#000;fill:var(--leaf-green);opacity:0;animation-iteration-count:1;will-change:transform;animation-name:fall;animation-timing-function:cubic-bezier(0.55,0.085,0.68,0.53)}
 .leaf path{stroke:#1c1c1c;stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round}
 .leaf.yellow{fill:var(--leaf-yellow);transform:scale(1.08);z-index:10}
@@ -131,7 +139,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-s
 .leaf.swirl-yellow{animation-name:swirl-yellow;animation-timing-function:ease-in-out}
 .leaf-inner{transform-origin:50% 50%;animation:flutter var(--flutter-speed,1200ms) ease-in-out infinite}
 
-/* Path animations */
+/* Path animations and flutter */
 @keyframes fall{0%{transform:translateY(0) translateX(0) rotate(0);opacity:1}100%{transform:translateY(90vh) translateX(var(--x-end)) rotate(var(--rotate-end));opacity:0}}
 @keyframes swirl-green{0%{transform:translate(var(--x-start),-10vh) rotate(0);opacity:0}20%{opacity:1}100%{transform:translate(var(--x-end),100vh) rotate(720deg);opacity:0}}
 @keyframes swirl-yellow{0%{transform:translate(50vw,-10vh) rotate(0) scale(1.08);opacity:0}15%{opacity:1;transform:translate(60vw,20vh) rotate(90deg) scale(1.08)}50%{transform:translate(20vw,50vh) rotate(270deg) scale(1.08)}85%{transform:translate(50vw,80vh) rotate(450deg) scale(1.08)}100%{transform:translate(40vw,100vh) rotate(540deg) scale(1.08);opacity:0}}
