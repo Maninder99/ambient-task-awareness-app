@@ -42,21 +42,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-s
 #task-animation-bg{position:absolute;inset:0;background:#f0f4f0;background-size:cover;background-position:center;z-index:1}
 #leaf-fall-container{position:absolute;inset:0;z-index:2;pointer-events:none}
 
-/* Request 1: projection text */
+/* Projection message */
 .projection-msg{
   position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
   color:#d32f2f;font-weight:700;text-align:center;padding:0 16px;z-index:3;pointer-events:none;
 }
 
 /* Reminder toast */
-.reminder-toast{
-  position:absolute;left:50%;bottom:120px;transform:translateX(-50%);
-  z-index:5;pointer-events:none;
-}
-.toast-content{
-  background:#ffffff; border:1px solid #e6ddff; box-shadow:0 10px 30px rgba(0,0,0,.12);
-  border-radius:12px; padding:10px 14px; color:#5a36ff; font-weight:700; display:flex; align-items:center; gap:8px;
-}
+.reminder-toast{position:absolute;left:50%;bottom:120px;transform:translateX(-50%);z-index:5;pointer-events:none}
+.toast-content{background:#fff;border:1px solid #e6ddff;box-shadow:0 10px 30px rgba(0,0,0,.12);border-radius:12px;padding:10px 14px;color:#5a36ff;font-weight:700;display:flex;align-items:center;gap:8px}
 .toast-bell{font-size:18px}
 
 /* Footer */
@@ -87,10 +81,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-s
 .edit-inline{margin-left:auto;background:none;border:0;cursor:pointer;font-size:1.2em}
 
 .task-controls{display:flex;gap:10px}
-.primary-button,.secondary-button,.delete-button{flex:1;padding:12px 14px;border-radius:8px;border:0;font-weight:700;cursor:pointer}
+.primary-button,.secondary-button{flex:1;padding:12px 14px;border-radius:8px;border:0;font-weight:700;cursor:pointer}
 .primary-button{background:var(--primary-purple);color:#fff}
+.primary-button:disabled{background:#e6ddff;color:#9aa0a6;cursor:not-allowed}
 .secondary-button{background:#eee;color:var(--dark-text)}
-.delete-button{background:#eee;color:var(--delete-red)}
 
 /* Edit screen */
 .form-container{padding:20px;display:flex;flex-direction:column;gap:12px;flex:1;min-height:0;overflow:auto}
@@ -112,7 +106,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-s
 .rem-row.custom span{font-style:italic}
 
 .edit-footer{padding:12px 20px;display:flex;flex-direction:column;gap:10px}
-.link-danger{background:none;border:none;color:var(--delete-red);text-align:left;font-weight:700;cursor:pointer;padding:6px 0}
 .edit-actions{display:flex;gap:10px}
 .restart-btn{width:100%}
 
@@ -139,7 +132,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-s
 .leaf.swirl-yellow{animation-name:swirl-yellow;animation-timing-function:ease-in-out}
 .leaf-inner{transform-origin:50% 50%;animation:flutter var(--flutter-speed,1200ms) ease-in-out infinite}
 
-/* Path animations and flutter */
+/* Animations */
 @keyframes fall{0%{transform:translateY(0) translateX(0) rotate(0);opacity:1}100%{transform:translateY(90vh) translateX(var(--x-end)) rotate(var(--rotate-end));opacity:0}}
 @keyframes swirl-green{0%{transform:translate(var(--x-start),-10vh) rotate(0);opacity:0}20%{opacity:1}100%{transform:translate(var(--x-end),100vh) rotate(720deg);opacity:0}}
 @keyframes swirl-yellow{0%{transform:translate(50vw,-10vh) rotate(0) scale(1.08);opacity:0}15%{opacity:1;transform:translate(60vw,20vh) rotate(90deg) scale(1.08)}50%{transform:translate(20vw,50vh) rotate(270deg) scale(1.08)}85%{transform:translate(50vw,80vh) rotate(450deg) scale(1.08)}100%{transform:translate(40vw,100vh) rotate(540deg) scale(1.08);opacity:0}}
