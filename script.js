@@ -83,6 +83,26 @@ document.addEventListener('DOMContentLoaded', () => {
   let mindfulInterval = null;
   let overdueShown = false;
   let toastCurrentOffset = null;
+  
+  // NEW: auto-hide timer for the toast and per-task reminder memory
+  let toastHideTimer = null;
+  const ensureReminderState = (t) => {
+    if (!Array.isArray(t.firedReminders)) t.firedReminders = [];
+  };
+
+  // Tree state
+  // Path data for the leaf (same as in #leaf-shape)
+  const LEAF_PATH_D = "M15.4,29.3C12.3,29.7,9,28.6,6.4,26.4c-4.2-3.6-6-9-5.4-14.2c0.2-1.8,0.9-3.6,2-5.1C4.4,5,6.2,3.3,8.3,2.2 c4.1-2.2,9-2.2,13.1,0c4.9,2.6,8,7.6,8.6,12.9c0.1,1.1,0,2.2-0.2,3.3C29,20.2,28.2,21.8,27,23.2c-2.4,2.9-5.8,4.9-9.5,5.7 C16.8,29,16.1,29.1,15.4,29.3z";
+  let treeLeaves = [];
+  let fallenLeaves = [];
+
+// Positions for leaves on a 400x500 tree viewBox
+const TREE_LEAF_POSITIONS = [
+  { x: 120, y: 250 }, { x: 140, y: 260 }, { x: 160, y: 270 },
+  { x: 280, y: 280 }, { x: 260, y: 290 }, { x: 240, y: 300 },
+  { x: 130, y: 240 }, { x: 270, y: 260 }, { x: 180, y: 310 },
+  { x: 220, y: 320 }
+];
 
   // Storage
   const saveTasks = () => localStorage.setItem('mindfulTasks', JSON.stringify(tasks));
@@ -275,7 +295,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateTimerDisplay();
       }
     } else {
-      tasks.push({ id: Date.now(), name, totalDuration: newTotal, remainingTime: newTotal, status:'paused', reminders });
+      tasks.push({ id: Date.now(), name, totalDuration: newTotal, remainingTime: newTotal, status:'paused', reminders, firedReminders: [] });
     }
     saveTasks(); renderTodayView(); showView('today');
   };
@@ -286,7 +306,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!editingTaskId) return;
     const t = tasks.find(x => x.id === editingTaskId);
     t.remainingTime = t.totalDuration; t.status = 'paused';
-    if (activeTask && activeTask.id === editingTaskId) { activeTask.remainingTime = t.totalDuration; activeTask.status='paused'; clearInterval(timerInterval); timerInterval=null; }
+    t.firedReminders = [];
+    if (activeTask && activeTask.id === editingTaskId) { activeTask.remainingTime = t.totalDuration; activeTask.status='paused'; activeTask.firedReminders = []; clearInterval(timerInterval); timerInterval=null; }
     saveTasks(); renderTodayView();
   });
   [taskNameInput, durationHrInput, durationMinInput].forEach(el => el.addEventListener('input', validateDurationInput));
@@ -346,26 +367,163 @@ document.addEventListener('DOMContentLoaded', () => {
     parent.appendChild(leaf);
     setTimeout(()=>leaf.remove(), d*1000);
   };
-  const burstAtReminder = () => {
-    // small burst of 3 leaves
-    for (let i=0;i<3;i++) setTimeout(()=>dropLeaf({parent: leafFallContainer}), i*120);
-  };
+
+  // Create swaying leaves on the SVG tree
+// Draw static, light‑green leaves on branches and keep them
+const initializeTree = () => {
+  const g = document.getElementById('tree-leaves');
+  if (!g) return;
+
+  // If already drawn, keep them (don’t re-draw on every entry)
+  if (g.childElementCount > 0) return;
+
+  treeLeaves = []; // keep anchor list for start positions
+
+  const lightGreens = ['#BFE8B8', '#CDECC5', '#D6F1CF']; // subtle variety
+
+  TREE_LEAF_POSITIONS.forEach(pos => {
+    // Parent group holds absolute position
+    const leafG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    leafG.setAttribute('class', 'tree-leaf');
+    leafG.setAttribute('transform', `translate(${pos.x}, ${pos.y})`);
+
+    // Inner group wiggles gently (optional)
+    const inner = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    inner.setAttribute('class', 'tree-leaf-inner');
+    inner.style.setProperty('--sway-delay', `${(Math.random()*3).toFixed(2)}s`);
+    inner.setAttribute('transform', `scale(${0.9 + Math.random()*0.15}) rotate(${Math.floor(Math.random()*360)})`);
+
+    // Use the same path as #leaf-shape, but draw it directly (no <use>) for reliability
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', "M15.4,29.3C12.3,29.7,9,28.6,6.4,26.4c-4.2-3.6-6-9-5.4-14.2c0.2-1.8,0.9-3.6,2-5.1C4.4,5,6.2,3.3,8.3,2.2 c4.1-2.2,9-2.2,13.1,0c4.9,2.6,8,7.6,8.6,12.9c0.1,1.1,0,2.2-0.2,3.3C29,20.2,28.2,21.8,27,23.2c-2.4,2.9-5.8,4.9-9.5,5.7 C16.8,29,16.1,29.1,15.4,29.3z");
+    path.setAttribute('fill', lightGreens[Math.floor(Math.random()*lightGreens.length)]);
+    path.setAttribute('stroke', '#1c1c1c');
+    path.setAttribute('stroke-width', '1.2');
+    path.setAttribute('stroke-linecap', 'round');
+    path.setAttribute('stroke-linejoin', 'round');
+
+    inner.appendChild(path);
+    leafG.appendChild(inner);
+    g.appendChild(leafG);
+
+    treeLeaves.push({ pos }); // anchors to drop from
+  });
+};
+
+// Drop one leaf from the tree onto the ground and keep it there
+const dropLeafFromTree = () => {
+  const leafFallLayer = document.getElementById('leaf-fall-container');
+  if (!leafFallLayer) return;
+
+  // Avoid 0×0 layout -> leaf at top-left
+  const rect = leafFallLayer.getBoundingClientRect();
+  if (rect.width < 10 || rect.height < 10) {
+    requestAnimationFrame(dropLeafFromTree);
+    return;
+  }
+
+  // Pick a random branch anchor — do NOT hide static leaves
+  const anchor = TREE_LEAF_POSITIONS[Math.floor(Math.random() * TREE_LEAF_POSITIONS.length)];
+
+  const cw = rect.width;
+  const ch = rect.height;
+
+  const startXpx = (anchor.x / 400) * cw;
+  const startYpx = (anchor.y / 500) * ch;
+
+  const leaf = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  leaf.classList.add('leaf', 'falling');
+  // Random occasional yellow leaf
+  if (Math.random() > 0.8) leaf.classList.add('yellow');
+  leaf.innerHTML = '<g class="leaf-inner"><use href="#leaf-shape"/></g>';
+
+  leaf.style.position = 'absolute';
+  leaf.style.left = `${startXpx}px`;
+  leaf.style.top = `${startYpx}px`;
+
+  // Drift/rotation and landing calculation
+  const xDriftPx = (Math.random() - 0.5) * Math.min(150, cw * 0.25);
+  const rotation = Math.floor((Math.random() - 0.5) * 720);
+
+  const groundHeight = 60; // matches #ground-line
+  const leafHeight = 30;
+  const stackOffset = fallenLeaves.length * 2 + Math.random() * 8;
+
+  const targetY = Math.max(0, ch - groundHeight - leafHeight - stackOffset);
+  const fallDistance = Math.max(0, targetY - startYpx);
+
+  leaf.style.setProperty('--x-drift', `${xDriftPx}px`);
+  leaf.style.setProperty('--fall-distance', `${fallDistance.toFixed(2)}px`);
+  leaf.style.setProperty('--rotate-end', `${rotation}deg`);
+
+  leafFallLayer.appendChild(leaf);
+
+  // After animation, fix it so it stays until task ends
+  setTimeout(() => {
+    leaf.classList.remove('falling');
+    leaf.classList.add('fallen');
+    leaf.style.left = `${(startXpx + xDriftPx).toFixed(2)}px`;
+    leaf.style.top = `${(startYpx + fallDistance).toFixed(2)}px`;
+    leaf.style.transform = `rotate(${rotation}deg)`;
+    fallenLeaves.push(leaf);
+
+    // Safety: remove any stray leaf that somehow landed at the very top-left corner
+    scrubCornerLeaves();
+  }, 2600);
+};
+
+// Remove any non-animated leaf stuck at the very top-left (safety net)
+const scrubCornerLeaves = () => {
+  const container = document.getElementById('leaf-fall-container');
+  if (!container) return;
+  const crect = container.getBoundingClientRect();
+  [...container.querySelectorAll('.leaf')].forEach(el => {
+    const r = el.getBoundingClientRect();
+    const nearLeft = (r.left - crect.left) < 6;
+    const nearTop = (r.top - crect.top) < 6;
+    if (!el.classList.contains('falling') && (nearLeft && nearTop)) {
+      el.remove();
+    }
+  });
+};
+
+
+  // At each reminder, drop exactly one leaf from the tree and keep it
+const burstAtReminder = () => {
+  dropLeafFromTree(); // one leaf per reminder, stays on ground
+};
 
   // Reminder toast & leaf trigger only at reminders (Request 1)
-  const updateReminderToast = () => {
-    if (!activeTask || !activeTask.reminders) return;
-    const r = activeTask.reminders.find(off => activeTask.remainingTime <= off && activeTask.remainingTime > off - 60);
-    if (r && toastCurrentOffset !== r) {
-      toastCurrentOffset = r;
-      toastText.textContent = formatOffsetText(r);
-      reminderToast.classList.remove('hidden');
-      burstAtReminder(); // leaves only here
-    }
-    if (!r && toastCurrentOffset !== null) {
+const updateReminderToast = () => {
+  if (!activeTask || !activeTask.reminders) return;
+  ensureReminderState(activeTask);
+
+  // Window: trigger if remaining is in (off-60, off]
+  const r = activeTask.reminders.find(off =>
+    activeTask.remainingTime <= off && activeTask.remainingTime > off - 60
+  );
+
+  if (r && !activeTask.firedReminders.includes(r)) {
+    // New reminder for this task
+    toastCurrentOffset = r;
+    activeTask.firedReminders.push(r);
+    saveTasks();
+
+    toastText.textContent = formatOffsetText(r);
+    reminderToast.classList.remove('hidden');
+
+    // Auto-hide in 10s
+    clearTimeout(toastHideTimer);
+    toastHideTimer = setTimeout(() => {
       reminderToast.classList.add('hidden');
-      toastCurrentOffset = null;
-    }
-  };
+    }, 10000);
+
+    // Drop exactly one leaf and keep it
+    burstAtReminder();
+  }
+
+  // Let the next window hit later; do not re-show if already fired
+};
 
   // Timer
   const startTicking = () => {
@@ -391,24 +549,43 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Start a task
   const startTask = (id) => {
-    const t = tasks.find(x => x.id === id); if (!t) return;
-    activeTask = t; activeTask.status = 'running';
-    toastCurrentOffset = null; reminderToast.classList.add('hidden');
+  const t = tasks.find(x => x.id === id);
+  if (!t) return;
 
-    activeTaskNameEl.textContent = activeTask.name;
-    activeDurationEl.textContent = formatHM(activeTask.totalDuration);
-    activeReminderCount.textContent = (activeTask.reminders || []).length;
-    renderReminderDots(activeTask);
-    updateTimerDisplay(); updateReminderToast();
+  ensureReminderState(t);
 
-    pauseOverlay.classList.add('hidden');
-    overdueOverlay.classList.toggle('hidden', !(activeTask.remainingTime <= 0));
-    overdueShown = activeTask.remainingTime <= 0;
+  activeTask = t;
+  activeTask.status = 'running';
 
-    showView('task');
-    pauseBtn.textContent = 'Pause';
-    startTicking();
-  };
+  // Show the view first so containers have size
+  showView('task');
+
+  // Build branch leaves if not already present; do not clear the ground pile
+  requestAnimationFrame(() => {
+    initializeTree();
+    scrubCornerLeaves();
+  });
+
+  // Reset toast display (not the history)
+  clearTimeout(toastHideTimer);
+  toastCurrentOffset = null;
+  reminderToast.classList.add('hidden');
+
+  activeTaskNameEl.textContent = activeTask.name;
+  activeDurationEl.textContent = formatHM(activeTask.totalDuration);
+  activeReminderCount.textContent = (activeTask.reminders || []).length;
+  renderReminderDots(activeTask);
+
+  updateTimerDisplay();
+  updateReminderToast();
+
+  pauseOverlay.classList.add('hidden');
+  overdueOverlay.classList.toggle('hidden', !(activeTask.remainingTime <= 0));
+  overdueShown = activeTask.remainingTime <= 0;
+
+  pauseBtn.textContent = 'Pause';
+  startTicking();
+};
 
   // Complete active
   function completeActive() {
@@ -418,7 +595,16 @@ document.addEventListener('DOMContentLoaded', () => {
     overdueOverlay.classList.add('hidden');
     pauseOverlay.classList.add('hidden');
     clearInterval(timerInterval); timerInterval = null;
-    saveTasks(); renderTodayView(); showView('today');
+    saveTasks(); renderTodayView(); 
+    // leafFallContainer.innerHTML = '';
+    // fallenLeaves = [];
+    // Hide toast and clear leaves at completion
+    clearTimeout(toastHideTimer);
+    reminderToast.classList.add('hidden');
+    toastCurrentOffset = null;
+    leafFallContainer.innerHTML = '';
+    fallenLeaves = [];
+    showView('today');
   }
   activeCheckbox.addEventListener('click', completeActive);
   doneBtn.addEventListener('click', completeActive);
@@ -429,7 +615,19 @@ document.addEventListener('DOMContentLoaded', () => {
   resumeBtn.addEventListener('click', () => { if (!activeTask) return; pauseOverlay.classList.add('hidden'); activeTask.status='running'; pauseBtn.textContent='Pause'; startTicking(); });
 
   // Back
-  backToTodayBtn.addEventListener('click', () => { if (activeTask) pauseNow(); pauseOverlay.classList.add('hidden'); overdueOverlay.classList.add('hidden'); renderTodayView(); showView('today'); });
+  backToTodayBtn.addEventListener('click', () => {
+  if (activeTask) pauseNow();
+  pauseOverlay.classList.add('hidden');
+  overdueOverlay.classList.add('hidden');
+
+  // Hide any toast only (don’t clear fallen leaves)
+  clearTimeout(toastHideTimer);
+  reminderToast.classList.add('hidden');
+  toastCurrentOffset = null;
+
+  renderTodayView();
+  showView('today');
+  });
 
   // Mindful break
   mindfulBreakChips.forEach(c => c.addEventListener('click', () => {
@@ -466,11 +664,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const setupDefault = () => {
     localStorage.clear();
     tasks = [
-      { id:1, name:'Article Reading', totalDuration:600, remainingTime:600, status:'paused', reminders:[300,120] }
+      { id:1, name:'Article Reading', totalDuration:600, remainingTime:600, status:'paused', reminders:[300,120], firedReminders: [] }
     ];
     deletedTasks = [];
     saveTasks(); saveDeleted();
     loadTasks(); loadDeleted();
+    tasks.forEach(t => ensureReminderState(t));
     renderTodayView(); showView('today');
   };
 

@@ -32,12 +32,30 @@
 
       <main class="tree-container-wrapper">
         <div id="task-animation-bg"></div>
+
+        <!-- NEW: Tree with branches and a container for leaves on the tree -->
+        <svg id="tree-svg" viewBox="0 0 400 500" style="position:absolute;inset:0;z-index:2;">
+          <g id="tree-structure">
+            <!-- Trunk -->
+            <rect x="190" y="300" width="20" height="200" fill="#8B4513" />
+            <!-- Left branch -->
+            <line x1="200" y1="320" x2="120" y2="250" stroke="#8B4513" stroke-width="8" stroke-linecap="round" />
+            <!-- Right branch -->
+            <line x1="200" y1="340" x2="280" y2="280" stroke="#8B4513" stroke-width="8" stroke-linecap="round" />
+            <!-- Small sub-branches -->
+            <line x1="150" y1="275" x2="130" y2="240" stroke="#8B4513" stroke-width="4" stroke-linecap="round" />
+            <line x1="250" y1="295" x2="270" y2="260" stroke="#8B4513" stroke-width="4" stroke-linecap="round" />
+          </g>
+          <!-- Leaves placed on branches (JS fills this) -->
+          <g id="tree-leaves"></g>
+        </svg>
+
+        <!-- Falling/fallen leaves layer -->
         <div id="leaf-fall-container"></div>
 
-        <!-- Projection message -->
-        <div id="projection-msg" class="projection-msg">Projection mirror in app coming soon...</div>
+        <!-- Subtle ground strip so leaves “land” visibly -->
+        <div id="ground-line"></div>
 
-        <!-- Reminder toast -->
         <div id="reminder-toast" class="reminder-toast hidden">
           <div class="toast-content">
             <span class="toast-bell">🔔</span>

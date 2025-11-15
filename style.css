@@ -137,3 +137,100 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-s
 @keyframes swirl-green{0%{transform:translate(var(--x-start),-10vh) rotate(0);opacity:0}20%{opacity:1}100%{transform:translate(var(--x-end),100vh) rotate(720deg);opacity:0}}
 @keyframes swirl-yellow{0%{transform:translate(50vw,-10vh) rotate(0) scale(1.08);opacity:0}15%{opacity:1;transform:translate(60vw,20vh) rotate(90deg) scale(1.08)}50%{transform:translate(20vw,50vh) rotate(270deg) scale(1.08)}85%{transform:translate(50vw,80vh) rotate(450deg) scale(1.08)}100%{transform:translate(40vw,100vh) rotate(540deg) scale(1.08);opacity:0}}
 @keyframes flutter{0%{transform:rotate(0deg)}20%{transform:rotate(var(--flutter-amp,8deg))}40%{transform:rotate(0deg) scale(1.02)}60%{transform:rotate(calc(var(--flutter-amp,8deg) * -1))}80%{transform:rotate(0deg)}100%{transform:rotate(0deg)}}
+/* === Tree + Ground + “stay on ground” falling leaves === */
+#tree-svg {
+  position: absolute;
+  inset: 0;
+  z-index: 2;            /* above bg, below falling leaves */
+  pointer-events: none;  /* decorative */
+}
+
+/* ensure falling leaves are above the tree */
+#leaf-fall-container {
+  z-index: 3; /* overrides earlier rule */
+}
+
+/* ground baseline to make the landing obvious */
+#ground-line {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 60px;
+  background: linear-gradient(to bottom, transparent, rgba(139,195,74,0.25));
+  z-index: 2; /* behind fallen leaves */
+}
+
+/* leaves perched on the tree */
+.tree-leaf {
+  animation: gentleSway 3.2s ease-in-out infinite;
+  transform-origin: center;
+  --sway-delay: 0s;
+  animation-delay: var(--sway-delay);
+}
+
+/* falling leaves should stop and stay on the ground */
+.leaf.falling {
+  animation: fallToGround 2.5s cubic-bezier(0.55,0.085,0.68,0.53) forwards;
+}
+
+.leaf.fallen {
+  animation: none;
+  opacity: 0.95;
+  z-index: 4; /* pile is above tree */
+}
+
+/* animate using custom props so JS can set distances in px */
+@keyframes fallToGround {
+  0%   { transform: translate(0,0) rotate(0deg); opacity: 1; }
+  100% { transform: translate(var(--x-drift,0px), var(--fall-distance,280px)) rotate(var(--rotate-end,0deg)); opacity: 0.95; }
+}
+
+/* gentle perch wiggle */
+@keyframes gentleSway {
+  0%,100% { transform: rotate(-2deg); }
+  50%     { transform: rotate(2deg); }
+}
+
+/* --- Fix tree-leaf behavior and ground pile --- */
+
+/* Hide the projection message (in case you didn't delete it from HTML) */
+#projection-msg { display: none !important; }
+
+/* Keep falling leaves on the ground once they land */
+.leaf.falling {
+  animation: fallToGround 2.5s cubic-bezier(0.55,0.085,0.68,0.53) forwards;
+}
+.leaf.fallen {
+  animation: none !important;
+  opacity: 0.95;
+  z-index: 4; /* above tree and ground */
+}
+
+/* New: we animate a nested group, not the translated container.
+   This prevents leaves from jumping to the (0,0) corner. */
+.tree-leaf { /* container positioned via translate(...) attribute in SVG */
+  /* no transform animation on this element */
+}
+.tree-leaf-inner {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: gentleSway 3.2s ease-in-out infinite;
+  animation-delay: var(--sway-delay, 0s);
+}
+
+/* Ensure falling leaves layer is above the tree and below the toast */
+#leaf-fall-container { z-index: 3; }
+
+/* Ground baseline (if not already added) */
+#ground-line {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 60px;
+  background: linear-gradient(to bottom, transparent, rgba(139,195,74,0.25));
+  z-index: 2;
+}
+
+/* Fall to ground with distances provided by JS */
+@keyframes fallToGround {
+  0%   { transform: translate(0,0) rotate(0deg); opacity: 1; }
+  100% { transform: translate(var(--x-drift,0px), var(--fall-distance,280px)) rotate(var(--rotate-end,0deg)); opacity: 0.95; }
+}
