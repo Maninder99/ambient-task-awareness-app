@@ -8,20 +8,190 @@
 </head>
 <body>
   <div id="app-container">
-    <!-- TODAY VIEW -->
-    <div id="today-view" class="view">
+    <!-- =========================
+         ONBOARDING VIEW
+         ========================= -->
+    <div id="onboarding-view" class="view">
+      <!-- Fullscreen video background -->
+      <div class="onboarding-bg">
+        <video
+          id="onboarding-video"
+          class="onboarding-video"
+          src="leaves_onboard.mp4"
+          autoplay
+          muted
+          loop
+          playsinline
+        ></video>
+      </div>
+
+      <!-- Foreground content on top of video -->
+      <div class="onboarding-foreground">
+        <header class="app-header">
+          <button class="icon-button" aria-label="menu">&#9776;</button>
+        </header>
+
+        <main class="onboarding-main">
+          <!-- Slide 1: Welcome -->
+          <section class="onboarding-slide active" data-step="0">
+            <h2 class="onboarding-title">Welcome</h2>
+            <p class="onboarding-subtitle">
+              Take a mindful approach to time.<br />
+              Watch your tasks unfold...
+            </p>
+          </section>
+
+          <!-- Slide 2: Welcome – one leaf at a time -->
+          <section class="onboarding-slide" data-step="1">
+            <h2 class="onboarding-title">Welcome</h2>
+            <p class="onboarding-subtitle">
+              Take a mindful approach to time.<br />
+              Watch your tasks unfold...<br />
+              one leaf at a time.
+            </p>
+          </section>
+
+          <!-- Slide 3: Create Your Task -->
+          <section class="onboarding-slide" data-step="2">
+            <h2 class="onboarding-title">Create Your Task</h2>
+            <p class="onboarding-subtitle">
+              Name your task, set its duration,<br />
+              and choose gentle reminders.<br />
+              That's all you need to begin.
+            </p>
+
+            <div class="onboarding-card">
+              <label class="onb-label">Name</label>
+              <div class="onb-input-row">
+                <div class="onb-input">Readings</div>
+                <span class="onb-clear">✕</span>
+              </div>
+
+              <div class="onb-section">
+                <div class="onb-section-title">
+                  <span class="onb-icon">🕒</span> Time estimate
+                </div>
+                <div class="onb-duration-row">
+                  <div class="onb-duration-box">
+                    <div class="onb-duration-value">3</div>
+                    <div class="onb-duration-label">Hour</div>
+                  </div>
+                  <div class="onb-duration-separator">:</div>
+                  <div class="onb-duration-box">
+                    <div class="onb-duration-value">30</div>
+                    <div class="onb-duration-label">Minute</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="onb-section">
+                <div class="onb-section-title">
+                  <span class="onb-icon">🔔</span>
+                  Reminders (automatically at end)
+                </div>
+                <ul class="onb-radio-list">
+                  <li class="onb-radio-item selected">
+                    <span class="onb-radio-dot"></span>
+                    1 hour 30 mins before end
+                  </li>
+                  <li class="onb-radio-item">
+                    <span class="onb-radio-dot"></span>
+                    1 hour before end
+                  </li>
+                  <li class="onb-radio-item">
+                    <span class="onb-radio-dot"></span>
+                    45 mins before end
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </section>
+
+          <!-- Slide 4: Watch Time Flow -->
+          <section class="onboarding-slide" data-step="3">
+            <h2 class="onboarding-title">Watch Time Flow</h2>
+            <p class="onboarding-subtitle">
+              Tap a task to start and watch the leaves fall.<br />
+              Each leaf marks time passing — no ticking clocks,<br />
+              just calm focus.
+            </p>
+
+            <div class="onb-task-demo">
+              <div class="onb-task-top">
+                <div class="onb-checkbox"></div>
+                <div class="onb-task-name">Sketches</div>
+                <button class="onb-edit-btn" aria-label="edit">&#9998;</button>
+              </div>
+              <div class="onb-task-bottom">
+                <span class="onb-task-bell">🔔</span>
+                <span class="onb-task-reminders">Reminders 2</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- Slide 5: Mindful Breaks -->
+          <section class="onboarding-slide" data-step="4">
+            <h2 class="onboarding-title">Mindful Breaks</h2>
+            <p class="onboarding-subtitle">
+              Feeling overwhelmed?<br />
+              Tap <strong>Mindful Break</strong> to pause, breathe,<br />
+              and relax with a short meditation before continuing.
+            </p>
+
+            <div class="onb-mb-demo">
+              <div class="onb-mb-chip">
+                <span class="onb-mb-icon">🧘‍♀️</span>
+                <span>Mindful Break</span>
+              </div>
+            </div>
+          </section>
+        </main>
+
+        <footer class="onboarding-footer">
+          <div class="onboarding-dots">
+            <span class="onboarding-dot active"></span>
+            <span class="onboarding-dot"></span>
+            <span class="onboarding-dot"></span>
+            <span class="onboarding-dot"></span>
+            <span class="onboarding-dot"></span>
+          </div>
+          <button id="onboarding-primary-btn" class="primary-button onboarding-button">
+            Start
+          </button>
+        </footer>
+      </div>
+    </div>
+
+    <!-- =========================
+         TODAY VIEW
+         ========================= -->
+    <div id="today-view" class="view hidden">
       <header class="app-header">
         <button id="menu-btn" class="icon-button" aria-label="menu">&#9776;</button>
         <h2>Today</h2>
-        <div class="mindful-break-chip">
-          <span class="leaf-icon-chip">&#127810;</span> Mindful Break
-        </div>
       </header>
+
       <main id="task-list" class="task-list-container"></main>
+
+      <!-- Bottom Mindful Break button, fixed at bottom -->
+      <div class="today-bottom">
+        <button
+          id="mindful-break-home"
+          class="mindful-break-chip mindful-break-bottom"
+          type="button"
+        >
+          <span class="onb-mb-icon">🧘‍♀️</span>
+          <span>Mindful break</span>
+        </button>
+      </div>
+
+      <!-- Add task FAB floating above bottom bar -->
       <button id="add-task-btn" class="fab" aria-label="add task">+</button>
     </div>
 
-    <!-- TASK VIEW -->
+    <!-- =========================
+         TASK VIEW
+         ========================= -->
     <div id="task-view" class="view hidden">
       <header class="app-header">
         <button id="back-to-today-btn" class="icon-button" aria-label="back">&#8592;</button>
@@ -33,8 +203,8 @@
       <main class="tree-container-wrapper">
         <div id="task-animation-bg"></div>
 
-        <!-- NEW: Tree with branches and a container for leaves on the tree -->
-        <svg id="tree-svg" viewBox="0 0 400 500" style="position:absolute;inset:0;z-index:2;">
+        <!-- Tree with branches and leaves -->
+        <svg id="tree-svg" viewBox="0 0 400 500">
           <g id="tree-structure">
             <!-- Trunk -->
             <rect x="190" y="300" width="20" height="200" fill="#8B4513" />
@@ -46,20 +216,20 @@
             <line x1="150" y1="275" x2="130" y2="240" stroke="#8B4513" stroke-width="4" stroke-linecap="round" />
             <line x1="250" y1="295" x2="270" y2="260" stroke="#8B4513" stroke-width="4" stroke-linecap="round" />
           </g>
-          <!-- Leaves placed on branches (JS fills this) -->
           <g id="tree-leaves"></g>
         </svg>
 
         <!-- Falling/fallen leaves layer -->
         <div id="leaf-fall-container"></div>
 
-        <!-- Subtle ground strip so leaves “land” visibly -->
+        <!-- Ground line -->
         <div id="ground-line"></div>
 
+        <!-- Reminder toast -->
         <div id="reminder-toast" class="reminder-toast hidden">
           <div class="toast-content">
             <span class="toast-bell">🔔</span>
-            <span id="toast-text">This is your 5 minutes reminder</span>
+            <span id="toast-text">This is your reminder</span>
           </div>
         </div>
       </main>
@@ -87,7 +257,7 @@
         </div>
 
         <div class="underbar-row">
-          <button id="active-checkbox" class="checkbox-lg" aria-label="mark done"></button>
+          <!-- Checkbox removed: completion only via Done button -->
           <div class="underbar-info">
             <h3 id="active-task-name">Task name</h3>
             <p class="under-duration">
@@ -105,12 +275,15 @@
       </footer>
     </div>
 
-    <!-- EDIT / NEW TASK VIEW -->
+    <!-- =========================
+         EDIT / NEW TASK VIEW
+         ========================= -->
     <div id="edit-task-view" class="view hidden">
       <header class="app-header">
         <h2 id="edit-view-title">New Task</h2>
         <button id="close-edit-view-btn" class="icon-button" aria-label="close">&#10005;</button>
       </header>
+
       <main class="form-container">
         <label class="field-label">Name</label>
         <input type="text" id="task-name-input" placeholder="Enter a task name..." />
@@ -123,7 +296,7 @@
           <span>Minute</span>
         </div>
 
-        <!-- Reminders (with 2 m option) -->
+        <!-- Reminders -->
         <div class="reminder-section">
           <div class="reminder-title">
             <span class="bell">🔔</span>
@@ -161,11 +334,14 @@
             </label>
           </div>
 
-          <button id="add-custom-reminder" type="button" class="link-button">+ Custom reminder</button>
+          <button id="add-custom-reminder" type="button" class="link-button">
+            + Custom reminder
+          </button>
         </div>
 
-        <!-- Restart only (Delete removed) -->
-        <button id="restart-task-btn" class="secondary-button restart-btn hidden">Restart Task</button>
+        <button id="restart-task-btn" class="secondary-button restart-btn hidden">
+          Restart Task
+        </button>
       </main>
 
       <footer class="edit-footer">
@@ -176,7 +352,9 @@
       </footer>
     </div>
 
-    <!-- OVERLAYS -->
+    <!-- =========================
+         OVERLAYS
+         ========================= -->
     <div id="pause-overlay" class="overlay hidden">
       <div class="overlay-card">
         <p class="overlay-title">Paused countdown</p>
@@ -187,17 +365,31 @@
     <div id="mindful-break-overlay" class="overlay hidden">
       <div id="mindful-leaf-container"></div>
       <div class="overlay-card">
-        <p class="overlay-title" style="color:#5a36ff;font-weight:800">Look up and follow the yellow leaf</p>
-        <div style="font-size:28px;margin:6px 0">🍃 <span style="color:#FFC107">🍂</span> 🍃</div>
+        <p class="overlay-title" style="color:#5a36ff;font-weight:800">
+          Look up and follow the yellow leaf
+        </p>
+        <div style="font-size:28px;margin:6px 0">
+          🍃 <span style="color:#FFC107">🍂</span> 🍃
+        </div>
         <div class="subtle">Take a mindful break — Paused countdown</div>
         <button id="end-mindful-break-btn" class="primary-button">Resume</button>
       </div>
     </div>
 
+    <!-- Overdue overlay with 5-minute picker -->
     <div id="overdue-overlay" class="overlay clear hidden">
       <div class="overlay-card overdue-card">
         <p class="overlay-title">Time is overdue. Do you want to extend the task?</p>
-        <button id="overdue-add-15" class="primary-button">Add 15 mins</button>
+
+        <div class="overdue-time-picker">
+          <button id="overdue-minus" class="circle-btn" disabled>-</button>
+          <div id="overdue-min-display" class="overdue-min-display">5 m</div>
+          <button id="overdue-plus" class="circle-btn">+</button>
+        </div>
+
+        <button id="overdue-apply" class="primary-button overdue-apply-btn">
+          Apply
+        </button>
       </div>
     </div>
 
@@ -209,12 +401,18 @@
       </div>
     </div>
 
-    <!-- In‑app custom reminder modal -->
+    <!-- Custom reminder modal -->
     <div id="custom-reminder-modal" class="overlay hidden">
       <div class="overlay-card">
         <p class="overlay-title">Add custom reminder</p>
         <div style="display:flex;gap:10px;justify-content:center;align-items:center">
-          <input type="number" id="custom-rem-min" min="1" value="2" style="width:80px;padding:8px;border:1px solid #ddd;border-radius:8px" />
+          <input
+            type="number"
+            id="custom-rem-min"
+            min="1"
+            value="2"
+            style="width:80px;padding:8px;border:1px solid #ddd;border-radius:8px"
+          />
           <span>minutes before end</span>
         </div>
         <div style="display:flex;gap:10px;margin-top:12px">
@@ -225,7 +423,7 @@
     </div>
   </div>
 
-  <!-- Leaf shape -->
+  <!-- Leaf shape definition -->
   <svg width="0" height="0" style="position:absolute;z-index:-1;">
     <defs>
       <g id="leaf-shape" transform="rotate(45 15 15)">
