@@ -12,6 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
     ? onboardingView.querySelectorAll('.onboarding-dot')
     : [];
   const onboardingBtn = document.getElementById('onboarding-primary-btn');
+  const hamburgerGlobal = document.getElementById('hamburger-global');
+  const onboardingVideo = document.getElementById('onboarding-video');
 
   // ----- Views -----
   const views = {
@@ -33,9 +35,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const progressBar = document.getElementById('progress-bar');
   const progressContainer = document.getElementById('progress-container');
   const reminderDotsEl = document.getElementById('reminder-dots');
-  const activeReminderCount = document.getElementById('active-reminder-count');
-  const activeTaskNameEl = document.getElementById('active-task-name');
-  const activeDurationEl = document.getElementById('active-duration');
+  const activeReminderCount = document.getElementById(
+    'active-reminder-count'
+  );
+  const activeTaskNameEl =
+    document.getElementById('active-task-name');
+  const activeDurationEl =
+    document.getElementById('active-duration');
   const pauseBtn = document.getElementById('pause-btn');
   const doneBtn = document.getElementById('done-btn');
   const inTaskEditBtn = document.getElementById('in-task-edit-btn');
@@ -48,21 +54,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Edit
   const editViewTitle = document.getElementById('edit-view-title');
-  const closeEditViewBtn = document.getElementById('close-edit-view-btn');
+  const closeEditViewBtn = document.getElementById(
+    'close-edit-view-btn'
+  );
   const taskNameInput = document.getElementById('task-name-input');
   const durationHrInput = document.getElementById('task-duration-hr');
-  const durationMinInput = document.getElementById('task-duration-min');
+  const durationMinInput =
+    document.getElementById('task-duration-min');
   const saveTaskBtn = document.getElementById('save-task-btn');
   const cancelTaskBtn = document.getElementById('cancel-task-btn');
   const restartTaskBtn = document.getElementById('restart-task-btn');
-  const reminderOptions = document.getElementById('reminder-options');
-  const addCustomReminderBtn = document.getElementById('add-custom-reminder');
+  const reminderOptions =
+    document.getElementById('reminder-options');
+  const addCustomReminderBtn = document.getElementById(
+    'add-custom-reminder'
+  );
 
   // Overlays & mindful
-  const mindfulBreakChips = document.querySelectorAll('.mindful-break-chip');
-  const mindfulOverlay = document.getElementById('mindful-break-overlay');
-  const mindfulLeafContainer = document.getElementById('mindful-leaf-container');
-  const endMindfulBreakBtn = document.getElementById('end-mindful-break-btn');
+  const mindfulBreakChips =
+    document.querySelectorAll('.mindful-break-chip');
+  const mindfulOverlay = document.getElementById(
+    'mindful-break-overlay'
+  );
+  const mindfulLeafContainer = document.getElementById(
+    'mindful-leaf-container'
+  );
+  const endMindfulBreakBtn = document.getElementById(
+    'end-mindful-break-btn'
+  );
 
   const pauseOverlay = document.getElementById('pause-overlay');
   const resumeBtn = document.getElementById('resume-btn');
@@ -71,17 +90,26 @@ document.addEventListener('DOMContentLoaded', () => {
   const overdueOverlay = document.getElementById('overdue-overlay');
   const overdueMinusBtn = document.getElementById('overdue-minus');
   const overduePlusBtn = document.getElementById('overdue-plus');
-  const overdueMinDisplay = document.getElementById('overdue-min-display');
+  const overdueMinDisplay =
+    document.getElementById('overdue-min-display');
   const overdueApplyBtn = document.getElementById('overdue-apply');
 
   const deletedOverlay = document.getElementById('deleted-overlay');
   const deletedListEl = document.getElementById('deleted-list');
   const closeDeletedBtn = document.getElementById('close-deleted');
 
-  const customModal = document.getElementById('custom-reminder-modal');
+  const customModal = document.getElementById(
+    'custom-reminder-modal'
+  );
   const customRemMin = document.getElementById('custom-rem-min');
   const customRemAdd = document.getElementById('custom-rem-add');
-  const customRemCancel = document.getElementById('custom-rem-cancel');
+  const customRemCancel =
+    document.getElementById('custom-rem-cancel');
+
+  const menuOverlay = document.getElementById('menu-overlay');
+  const menuOnboardingBtn =
+    document.getElementById('menu-onboarding');
+  const menuTrashBtn = document.getElementById('menu-trash');
 
   // State
   let tasks = [];
@@ -95,14 +123,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let overdueExtensionMin = 5;
 
-  // Tree state
-  const TREE_LEAF_POSITIONS = [
-    { x: 120, y: 250 }, { x: 140, y: 260 }, { x: 160, y: 270 },
-    { x: 280, y: 280 }, { x: 260, y: 290 }, { x: 240, y: 300 },
-    { x: 130, y: 240 }, { x: 270, y: 260 }, { x: 180, y: 310 },
-    { x: 220, y: 320 }
-  ];
   let fallenLeaves = [];
+
+  let onboardingStep = 0;
 
   // Storage helpers
   const saveTasks = () =>
@@ -110,18 +133,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const loadTasks = () =>
     (tasks = JSON.parse(localStorage.getItem('mindfulTasks') || '[]'));
   const saveDeleted = () =>
-    localStorage.setItem('mindfulDeleted', JSON.stringify(deletedTasks));
+    localStorage.setItem(
+      'mindfulDeleted',
+      JSON.stringify(deletedTasks)
+    );
   const loadDeleted = () =>
-    (deletedTasks = JSON.parse(localStorage.getItem('mindfulDeleted') || '[]'));
-
-  // ---------------- Helpers ----------------
-  const showView = (name) => {
-    Object.entries(views).forEach(([key, el]) => {
-      if (!el) return;
-      if (key === name) el.classList.remove('hidden');
-      else el.classList.add('hidden');
-    });
-  };
+    (deletedTasks = JSON.parse(
+      localStorage.getItem('mindfulDeleted') || '[]'
+    ));
 
   const pad2 = (n) => String(n).padStart(2, '0');
 
@@ -160,10 +179,10 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // --------- Overdue picker UI helpers ---------
+
   function updateOverduePickerUI() {
-    if (!overdueMinDisplay) return;
     overdueMinDisplay.textContent = `${overdueExtensionMin} m`;
-    if (overdueMinusBtn) overdueMinusBtn.disabled = overdueExtensionMin <= 5;
+    overdueMinusBtn.disabled = overdueExtensionMin <= 5;
   }
 
   function resetOverduePicker() {
@@ -173,7 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function showOverdueOverlay() {
     resetOverduePicker();
-    if (overdueOverlay) overdueOverlay.classList.remove('hidden');
+    overdueOverlay.classList.remove('hidden');
   }
 
   function applyOverdueExtension() {
@@ -213,10 +232,14 @@ document.addEventListener('DOMContentLoaded', () => {
       if (task.status === 'completed') row.classList.add('completed');
 
       row.innerHTML = `
-        <div class="checkbox">${task.status === 'completed' ? '✓' : ''}</div>
+        <div class="checkbox">${
+          task.status === 'completed' ? '✓' : ''
+        }</div>
         <div class="task-item-content">
           <h3>${task.name}</h3>
-          <p><span class="clock-icn">🕒</span> Duration: ${formatHM(task.totalDuration)}</p>
+          <p><span class="clock-icn">🕒</span> Duration: ${formatHM(
+            task.totalDuration
+          )}</p>
           ${
             showRemainingLine
               ? `<div class="status-line" style="${
@@ -225,8 +248,12 @@ document.addEventListener('DOMContentLoaded', () => {
                  <span>🕑</span>
                  ${
                    task.remainingTime >= 0
-                     ? `Started: ${formatHM(task.remainingTime)} remaining`
-                     : `Overdue: ${formatHM(-task.remainingTime)}`
+                     ? `Started: ${formatHM(
+                         task.remainingTime
+                       )} remaining`
+                     : `Overdue: ${formatHM(
+                         -task.remainingTime
+                       )}`
                  }
                </div>`
               : ''
@@ -237,16 +264,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }">${task.status === 'completed' ? '🗑' : '&#9998;'}</div>
       `;
 
-      row.querySelector('.checkbox').addEventListener('click', (e) => {
-        e.stopPropagation();
-        toggleComplete(task.id);
-      });
+      row.querySelector('.checkbox').addEventListener(
+        'click',
+        (e) => {
+          e.stopPropagation();
+          toggleComplete(task.id);
+        }
+      );
 
-      row.querySelector('.right-icon').addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (task.status === 'completed') deleteTask(task.id);
-        else openEditView(task.id);
-      });
+      row.querySelector('.right-icon').addEventListener(
+        'click',
+        (e) => {
+          e.stopPropagation();
+          if (task.status === 'completed') deleteTask(task.id);
+          else openEditView(task.id);
+        }
+      );
 
       row.addEventListener('click', () => {
         if (task.status !== 'completed') startTask(task.id);
@@ -257,6 +290,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // Deleted list rendering
+
   const renderDeletedList = () => {
     deletedListEl.innerHTML = '';
     if (!deletedTasks.length) {
@@ -275,16 +309,16 @@ document.addEventListener('DOMContentLoaded', () => {
           <div>
             <div><strong>${d.name}</strong></div>
             <div class="meta">
-              Deleted: ${formatDateTime(d.deletedAt)} · Duration: ${formatHM(
-          d.totalDuration
-        )}
+              Deleted: ${formatDateTime(
+                d.deletedAt
+              )} · Duration: ${formatHM(d.totalDuration)}
             </div>
           </div>
           <button class="restore-btn">Restore</button>
         `;
-        row
-          .querySelector('.restore-btn')
-          .addEventListener('click', () => {
+        row.querySelector('.restore-btn').addEventListener(
+          'click',
+          () => {
             tasks.push({
               id: Date.now(),
               name: d.name,
@@ -301,7 +335,8 @@ document.addEventListener('DOMContentLoaded', () => {
             saveDeleted();
             renderDeletedList();
             renderTodayView();
-          });
+          }
+        );
         deletedListEl.appendChild(row);
       });
   };
@@ -346,7 +381,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const ensureCustomRowForOffset = (sec) => {
     if (DEFAULT_REMINDER_VALUES.includes(sec)) return;
-    if (reminderOptions.querySelector(`.rem-choice[value="${sec}"]`)) return;
+    if (reminderOptions.querySelector(
+      `.rem-choice[value="${sec}"]`
+    ))
+      return;
 
     const label = document.createElement('label');
     label.className = 'rem-row custom';
@@ -387,20 +425,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const setSelectedReminderOffsets = (offs = []) => {
     offs.forEach((o) => ensureCustomRowForOffset(o));
-    [...reminderOptions.querySelectorAll('.rem-choice')].forEach((i) => {
-      i.checked = offs.includes(parseInt(i.value, 10));
-    });
+    [...reminderOptions.querySelectorAll('.rem-choice')].forEach(
+      (i) => {
+        i.checked = offs.includes(parseInt(i.value, 10));
+      }
+    );
   };
 
   const getSelectedReminderOffsets = () =>
-    [...reminderOptions.querySelectorAll('.rem-choice:checked')].map((i) =>
-      parseInt(i.value, 10)
+    [...reminderOptions.querySelectorAll('.rem-choice:checked')].map(
+      (i) => parseInt(i.value, 10)
     );
 
   const refreshReminderOptionsUI = (total) => {
-    [...reminderOptions.querySelectorAll('.rem-choice')].forEach((i) => {
-      i.disabled = parseInt(i.value, 10) >= total;
-    });
+    [...reminderOptions.querySelectorAll('.rem-choice')].forEach(
+      (i) => {
+        i.disabled = parseInt(i.value, 10) >= total;
+      }
+    );
   };
 
   const validateDurationInput = () => {
@@ -425,7 +467,11 @@ document.addEventListener('DOMContentLoaded', () => {
       setSelectedReminderOffsets(t.reminders || []);
       refreshReminderOptionsUI(t.totalDuration);
 
-      if (activeTask && activeTask.id === taskId && activeTask.status !== 'completed') {
+      if (
+        activeTask &&
+        activeTask.id === taskId &&
+        activeTask.status !== 'completed'
+      ) {
         restartTaskBtn.classList.remove('hidden');
       }
     } else {
@@ -445,7 +491,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const name = taskNameInput.value.trim();
     const newTotal = getEditDurationSeconds();
     if (!name || newTotal <= 0) return;
-    const reminders = getSelectedReminderOffsets().sort((a, b) => a - b);
+    const reminders = getSelectedReminderOffsets().sort(
+      (a, b) => a - b
+    );
 
     if (editingTaskId) {
       const t = tasks.find((x) => x.id === editingTaskId);
@@ -588,16 +636,11 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    const anchor =
-      TREE_LEAF_POSITIONS[
-        Math.floor(Math.random() * TREE_LEAF_POSITIONS.length)
-      ];
-
     const cw = rect.width;
     const ch = rect.height;
 
-    const startXpx = (anchor.x / 400) * cw;
-    const startYpx = (anchor.y / 500) * ch;
+    const startXpx = cw * (0.2 + 0.6 * Math.random());
+    const startYpx = ch * 0.12;
 
     const leaf = document.createElementNS(
       'http://www.w3.org/2000/svg',
@@ -605,7 +648,8 @@ document.addEventListener('DOMContentLoaded', () => {
     );
     leaf.classList.add('leaf', 'falling');
     if (Math.random() > 0.8) leaf.classList.add('yellow');
-    leaf.innerHTML = '<g class="leaf-inner"><use href="#leaf-shape"/></g>';
+    leaf.innerHTML =
+      '<g class="leaf-inner"><use href="#leaf-shape"/></g>';
 
     leaf.style.position = 'absolute';
     leaf.style.left = `${startXpx}px`;
@@ -650,14 +694,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 2600);
   };
 
-  // Swirl leaves for mindful break overlay
   const dropLeaf = ({ parent, isSwirl = false, isYellow = false } = {}) => {
     const container = parent || leafFallContainer;
     if (!container) return;
     const rect = container.getBoundingClientRect();
     if (rect.width < 10 || rect.height < 10) return;
 
-    const leaf = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    const leaf = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'svg'
+    );
     leaf.classList.add('leaf');
     if (isYellow) leaf.classList.add('yellow');
 
@@ -667,7 +713,8 @@ document.addEventListener('DOMContentLoaded', () => {
       leaf.classList.add('falling');
     }
 
-    leaf.innerHTML = '<g class="leaf-inner"><use href="#leaf-shape"/></g>';
+    leaf.innerHTML =
+      '<g class="leaf-inner"><use href="#leaf-shape"/></g>';
     leaf.style.position = 'absolute';
     leaf.style.left = `${Math.random() * rect.width}px`;
     leaf.style.top = `-40px`;
@@ -679,7 +726,9 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const burstAtReminder = () => {
-    dropLeafFromTree();
+    for (let i = 0; i < 3; i++) {
+      setTimeout(dropLeafFromTree, i * 250);
+    }
   };
 
   // ---------------- Reminders ----------------
@@ -824,7 +873,7 @@ document.addEventListener('DOMContentLoaded', () => {
     showView('today');
   });
 
-  // Mindful break (header + home bottom)
+  // Mindful break chips (header/Today/onboarding)
   mindfulBreakChips.forEach((c) =>
     c.addEventListener('click', () => {
       if (activeTask) pauseNow();
@@ -866,36 +915,82 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Overdue +/- & Apply
-  if (overdueMinusBtn) {
-    overdueMinusBtn.addEventListener('click', () => {
-      if (overdueExtensionMin > 5) {
-        overdueExtensionMin -= 5;
-        updateOverduePickerUI();
-      }
-    });
-  }
-  if (overduePlusBtn) {
-    overduePlusBtn.addEventListener('click', () => {
-      overdueExtensionMin += 5;
+  overdueMinusBtn.addEventListener('click', () => {
+    if (overdueExtensionMin > 5) {
+      overdueExtensionMin -= 5;
       updateOverduePickerUI();
-    });
-  }
-  if (overdueApplyBtn) {
-    overdueApplyBtn.addEventListener('click', applyOverdueExtension);
-  }
+    }
+  });
+  overduePlusBtn.addEventListener('click', () => {
+    overdueExtensionMin += 5;
+    updateOverduePickerUI();
+  });
+  overdueApplyBtn.addEventListener('click', applyOverdueExtension);
 
-  // Menu for deleted tasks
-  menuBtn.addEventListener('click', () => {
+  // Menu overlay open/close
+  const openMenu = () => {
+    menuOverlay.classList.remove('hidden');
+  };
+  const closeMenu = () => {
+    menuOverlay.classList.add('hidden');
+  };
+
+  menuBtn.addEventListener('click', openMenu);
+  if (hamburgerGlobal) hamburgerGlobal.addEventListener('click', openMenu);
+
+  menuOverlay.addEventListener('click', (e) => {
+    if (e.target === menuOverlay) closeMenu();
+  });
+
+  menuOnboardingBtn.addEventListener('click', () => {
+    closeMenu();
+    setOnboardingStep(0);
+    showView('onboarding');
+  });
+
+  menuTrashBtn.addEventListener('click', () => {
+    closeMenu();
     renderDeletedList();
     deletedOverlay.classList.remove('hidden');
   });
+
   closeDeletedBtn.addEventListener('click', () =>
     deletedOverlay.classList.add('hidden')
   );
 
   // ---------------- Onboarding logic ----------------
 
-  let onboardingStep = 0;
+  const showView = (name) => {
+    Object.entries(views).forEach(([key, el]) => {
+      if (!el) return;
+      if (key === name) el.classList.remove('hidden');
+      else el.classList.add('hidden');
+    });
+  };
+
+  const updateOnboardingVideoSrc = () => {
+    if (!onboardingVideo) return;
+    const lastIndex = onboardingSlides.length - 1;
+    if (onboardingStep === lastIndex) {
+      // Mindful Break slide uses mindful_break.mp4
+      if (onboardingVideo.dataset.current !== 'mb') {
+        onboardingVideo.src = 'mindful_break.mp4';
+        onboardingVideo.dataset.current = 'mb';
+        onboardingVideo
+          .play()
+          .catch(() => {});
+      }
+    } else {
+      // Other slides use leaves_onboard.mp4
+      if (onboardingVideo.dataset.current !== 'leaves') {
+        onboardingVideo.src = 'leaves_onboard.mp4';
+        onboardingVideo.dataset.current = 'leaves';
+        onboardingVideo
+          .play()
+          .catch(() => {});
+      }
+    }
+  };
 
   const setOnboardingStep = (index) => {
     if (!onboardingView) return;
@@ -910,14 +1005,19 @@ document.addEventListener('DOMContentLoaded', () => {
     );
 
     if (!onboardingBtn) return;
+    onboardingBtn.textContent =
+      onboardingStep === maxIndex ? 'Start' : 'Next';
 
-    // First & last slide: "Start", middle slides: "Next"
-    if (onboardingStep === 0 || onboardingStep === maxIndex) {
-      onboardingBtn.textContent = 'Start';
-    } else {
-      onboardingBtn.textContent = 'Next';
-    }
+    // Switch video depending on slide
+    updateOnboardingVideoSrc();
   };
+
+  // Dots clickable
+  onboardingDots.forEach((dot, index) => {
+    dot.addEventListener('click', () => {
+      setOnboardingStep(index);
+    });
+  });
 
   if (onboardingBtn) {
     onboardingBtn.addEventListener('click', () => {
@@ -926,8 +1026,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setOnboardingStep(onboardingStep + 1);
         return;
       }
-      // finished onboarding
-      localStorage.setItem('mindfulOnboardingDone', '1');
+      // finished onboarding for this session
       renderTodayView();
       showView('today');
     });
@@ -935,10 +1034,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ---------------- Initial data & init ----------------
 
+  const ensureReminderStateForAll = () => {
+    tasks.forEach((t) => ensureReminderState(t));
+  };
+
   const ensureDefaultData = () => {
     loadTasks();
     loadDeleted();
-    tasks.forEach((t) => ensureReminderState(t));
+    ensureReminderStateForAll();
 
     if (!tasks.length && !deletedTasks.length) {
       tasks = [
@@ -948,7 +1051,7 @@ document.addEventListener('DOMContentLoaded', () => {
           totalDuration: 600,
           remainingTime: 600,
           status: 'paused',
-          reminders: [300, 120],
+          reminders: [300, 120, 60],
           firedReminders: [],
         },
       ];
@@ -961,15 +1064,9 @@ document.addEventListener('DOMContentLoaded', () => {
     ensureDefaultData();
     renderTodayView();
 
-    const onboardingDone =
-      localStorage.getItem('mindfulOnboardingDone') === '1';
-
-    if (!onboardingDone && onboardingView) {
-      setOnboardingStep(0);
-      showView('onboarding');
-    } else {
-      showView('today');
-    }
+    // Always start from onboarding on refresh
+    setOnboardingStep(0);
+    showView('onboarding');
   };
 
   initApp();
