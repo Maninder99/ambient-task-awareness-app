@@ -1,4 +1,19 @@
 document.addEventListener('DOMContentLoaded', () => {
+  // === RASPBERRY PI CONNECTION CONFIG ===
+const PI_URL = "https://192.168.0.115:5001";  // CHANGE IP if your Pi changes networks
+
+function sendCommandToPi(command) {
+  fetch(`${PI_URL}/play`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ command })
+  })
+  .then(res => res.json())
+  .then(data => console.log("Pi response:", data))
+  .catch(err => console.error("Failed to reach Pi:", err));
+}
+
+  
   const TICK_MS = 1000;
   const STEP_SECONDS = 1;
   const DEFAULT_REMINDER_VALUES = [5400, 3600, 2700, 1800, 900, 300, 120];
@@ -876,6 +891,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Mindful break chips (header/Today/onboarding)
   mindfulBreakChips.forEach((c) =>
     c.addEventListener('click', () => {
+      sendCommandToPi("mindful_break");
       if (activeTask) pauseNow();
       mindfulOverlay.classList.remove('hidden');
       clearInterval(mindfulInterval);
