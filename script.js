@@ -930,6 +930,10 @@ function sendCommandToPi(command) {
     setTimeout(() => {
       mindfulLeafContainer.innerHTML = '';
     }, 500);
+
+    // STOP mindful break & switch projector back to default.mp4
+    sendCommandToPi("default");
+
     if (activeTask) {
       activeTask.status = 'running';
       pauseBtn.textContent = 'Pause';
