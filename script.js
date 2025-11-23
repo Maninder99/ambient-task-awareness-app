@@ -763,27 +763,43 @@ function sendCommandToPi(command) {
     );
 
     if (r && !activeTask.firedReminders.includes(r)) {
-      activeTask.firedReminders.push(r);
-      saveTasks();
+      // Count this reminder occurrence
+        activeTask.firedReminders.push(Date.now());
+        saveTasks();
 
-      toastText.textContent = formatOffsetText(r);
-      reminderToast.classList.remove('hidden');
+        // Compute reminder index 1..5
+        const reminderIndex = activeTask.firedReminders.length;
+        const reminderNumber = Math.min(reminderIndex, 5);
 
-      clearTimeout(toastHideTimer);
-      toastHideTimer = setTimeout(() => {
-        reminderToast.classList.add('hidden');
-      }, 10000);
+        // Play corresponding reminder animation via Pi
+        fetch(`${PI_URL}/play_reminder`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ number: reminderNumber })
+        });
 
-      burstAtReminder();
-      const reminderIndex = activeTask.firedReminders.length; // index 1..5
-      const reminderNumber = Math.min(reminderIndex, 5);
+      // activeTask.firedReminders.push(r);
+      // saveTasks();
 
-      // send reminder-specific animation
-      fetch(`${PI_URL}/play_reminder`, {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ number: reminderNumber })
-      });
+      // toastText.textContent = formatOffsetText(r);
+      // reminderToast.classList.remove('hidden');
+
+      // clearTimeout(toastHideTimer);
+      // toastHideTimer = setTimeout(() => {
+      //   reminderToast.classList.add('hidden');
+      // }, 10000);
+
+      // burstAtReminder();
+      // // activeTask.firedReminders.push(Date.now());
+      // const reminderIndex = activeTask.firedReminders.length; // index 1..5
+      // const reminderNumber = Math.min(reminderIndex, 5);
+
+      // // send reminder-specific animation
+      // fetch(`${PI_URL}/play_reminder`, {
+      //   method: "POST",
+      //   headers: {"Content-Type": "application/json"},
+      //   body: JSON.stringify({ number: reminderNumber })
+      // });
       // sendCommandToPi("play_full_once");
     }
   };
