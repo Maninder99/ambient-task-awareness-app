@@ -646,72 +646,114 @@ function sendCommandToPi(command) {
   };
 
   const dropLeafFromTree = () => {
-    const layer = leafFallContainer;
-    if (!layer) return;
+  const layer = leafFallContainer;
+  if (!layer) return;
 
-    const rect = layer.getBoundingClientRect();
-    if (rect.width < 10 || rect.height < 10) {
-      requestAnimationFrame(dropLeafFromTree);
-      return;
-    }
+  const rect = layer.getBoundingClientRect();
+  const cw = rect.width;
+  const ch = rect.height;
 
-    const cw = rect.width;
-    const ch = rect.height;
+  const startX = cw * 0.5;  // consistent central drop
+  const startY = ch * 0.12;
 
-    const startXpx = cw * (0.2 + 0.6 * Math.random());
-    const startYpx = ch * 0.12;
+  const leaf = document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    "svg"
+  );
+  leaf.classList.add("leaf", "falling");
+  leaf.innerHTML = '<g class="leaf-inner"><use href="#leaf-shape"/></g>';
 
-    const leaf = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'svg'
-    );
-    leaf.classList.add('leaf', 'falling');
-    if (Math.random() > 0.8) leaf.classList.add('yellow');
-    leaf.innerHTML =
-      '<g class="leaf-inner"><use href="#leaf-shape"/></g>';
+  leaf.style.position = "absolute";
+  leaf.style.left = `${startX}px`;
+  leaf.style.top = `${startY}px`;
 
-    leaf.style.position = 'absolute';
-    leaf.style.left = `${startXpx}px`;
-    leaf.style.top = `${startYpx}px`;
+  // stack offset so leaves pile up instead of overlapping
+  const stackOffset = fallenLeaves.length * 4;
+  const targetY = ch - 60 - 30 - stackOffset;
 
-    const xDriftPx =
-      (Math.random() - 0.5) * Math.min(150, cw * 0.25);
-    const rotation = Math.floor(
-      (Math.random() - 0.5) * 720
-    );
+  leaf.style.setProperty("--x-drift", "0px");
+  leaf.style.setProperty("--fall-distance", `${targetY - startY}px`);
+  leaf.style.setProperty("--rotate-end", `0deg`);
 
-    const groundHeight = 60;
-    const leafHeight = 30;
-    const stackOffset =
-      fallenLeaves.length * 2 + Math.random() * 8;
+  layer.appendChild(leaf);
 
-    const targetY = Math.max(
-      0,
-      ch - groundHeight - leafHeight - stackOffset
-    );
-    const fallDistance = Math.max(0, targetY - startYpx);
+  setTimeout(() => {
+    leaf.classList.remove("falling");
+    leaf.classList.add("fallen");
+    leaf.style.left = `${startX}px`;
+    leaf.style.top = `${targetY}px`;
+    fallenLeaves.push(leaf);  // stays and stacks
+  }, 2600);
+};
 
-    leaf.style.setProperty('--x-drift', `${xDriftPx}px`);
-    leaf.style.setProperty(
-      '--fall-distance',
-      `${fallDistance.toFixed(2)}px`
-    );
-    leaf.style.setProperty('--rotate-end', `${rotation}deg`);
 
-    layer.appendChild(leaf);
+  // const dropLeafFromTree = () => {
+  //   const layer = leafFallContainer;
+  //   if (!layer) return;
 
-    setTimeout(() => {
-      leaf.classList.remove('falling');
-      leaf.classList.add('fallen');
-      leaf.style.left = `${(startXpx + xDriftPx).toFixed(2)}px`;
-      leaf.style.top = `${(
-        startYpx + fallDistance
-      ).toFixed(2)}px`;
-      leaf.style.transform = `rotate(${rotation}deg)`;
-      fallenLeaves.push(leaf);
-      scrubCornerLeaves();
-    }, 2600);
-  };
+  //   const rect = layer.getBoundingClientRect();
+  //   if (rect.width < 10 || rect.height < 10) {
+  //     requestAnimationFrame(dropLeafFromTree);
+  //     return;
+  //   }
+
+  //   const cw = rect.width;
+  //   const ch = rect.height;
+
+  //   const startXpx = cw * (0.2 + 0.6 * Math.random());
+  //   const startYpx = ch * 0.12;
+
+  //   const leaf = document.createElementNS(
+  //     'http://www.w3.org/2000/svg',
+  //     'svg'
+  //   );
+  //   leaf.classList.add('leaf', 'falling');
+  //   if (Math.random() > 0.8) leaf.classList.add('yellow');
+  //   leaf.innerHTML =
+  //     '<g class="leaf-inner"><use href="#leaf-shape"/></g>';
+
+  //   leaf.style.position = 'absolute';
+  //   leaf.style.left = `${startXpx}px`;
+  //   leaf.style.top = `${startYpx}px`;
+
+  //   const xDriftPx =
+  //     (Math.random() - 0.5) * Math.min(150, cw * 0.25);
+  //   const rotation = Math.floor(
+  //     (Math.random() - 0.5) * 720
+  //   );
+
+  //   const groundHeight = 60;
+  //   const leafHeight = 30;
+  //   const stackOffset =
+  //     fallenLeaves.length * 2 + Math.random() * 8;
+
+  //   const targetY = Math.max(
+  //     0,
+  //     ch - groundHeight - leafHeight - stackOffset
+  //   );
+  //   const fallDistance = Math.max(0, targetY - startYpx);
+
+  //   leaf.style.setProperty('--x-drift', `${xDriftPx}px`);
+  //   leaf.style.setProperty(
+  //     '--fall-distance',
+  //     `${fallDistance.toFixed(2)}px`
+  //   );
+  //   leaf.style.setProperty('--rotate-end', `${rotation}deg`);
+
+  //   layer.appendChild(leaf);
+
+  //   setTimeout(() => {
+  //     leaf.classList.remove('falling');
+  //     leaf.classList.add('fallen');
+  //     leaf.style.left = `${(startXpx + xDriftPx).toFixed(2)}px`;
+  //     leaf.style.top = `${(
+  //       startYpx + fallDistance
+  //     ).toFixed(2)}px`;
+  //     leaf.style.transform = `rotate(${rotation}deg)`;
+  //     fallenLeaves.push(leaf);
+  //     scrubCornerLeaves();
+  //   }, 2600);
+  // };
 
   const dropLeaf = ({ parent, isSwirl = false, isYellow = false } = {}) => {
     const container = parent || leafFallContainer;
@@ -745,9 +787,7 @@ function sendCommandToPi(command) {
   };
 
   const burstAtReminder = () => {
-    for (let i = 0; i < 3; i++) {
-      setTimeout(dropLeafFromTree, i * 250);
-    }
+  dropLeafFromTree();   // ONLY ONE leaf
   };
 
   // ---------------- Reminders ----------------
