@@ -775,7 +775,16 @@ function sendCommandToPi(command) {
       }, 10000);
 
       burstAtReminder();
-      sendCommandToPi("play_full_once");
+      const reminderIndex = activeTask.firedReminders.length; // index 1..5
+      const reminderNumber = Math.min(reminderIndex, 5);
+
+      // send reminder-specific animation
+      fetch(`${PI_URL}/play_reminder`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ number: reminderNumber })
+      });
+      // sendCommandToPi("play_full_once");
     }
   };
 
