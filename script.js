@@ -792,58 +792,6 @@ function sendCommandToPi(command) {
 
   // ---------------- Reminders ----------------
 
-  // const updateReminderToast = () => {
-  //   if (!activeTask || !activeTask.reminders) return;
-  //   ensureReminderState(activeTask);
-
-  //   const r = activeTask.reminders.find(
-  //     (off) =>
-  //       activeTask.remainingTime <= off &&
-  //       activeTask.remainingTime > off - 60
-  //   );
-
-  //   if (r && !activeTask.firedReminders.includes(r)) {
-  //     // Count this reminder occurrence
-  //       activeTask.firedReminders.push(Date.now());
-  //       saveTasks();
-
-  //       // Compute reminder index 1..5
-  //       const reminderIndex = activeTask.firedReminders.length;
-  //       const reminderNumber = Math.min(reminderIndex, 5);
-
-  //       // Play corresponding reminder animation via Pi
-  //       fetch(`${PI_URL}/play_reminder`, {
-  //         method: "POST",
-  //         headers: { "Content-Type": "application/json" },
-  //         body: JSON.stringify({ number: reminderNumber })
-  //       });
-
-  //     // activeTask.firedReminders.push(r);
-  //     // saveTasks();
-
-  //     // toastText.textContent = formatOffsetText(r);
-  //     // reminderToast.classList.remove('hidden');
-
-  //     // clearTimeout(toastHideTimer);
-  //     // toastHideTimer = setTimeout(() => {
-  //     //   reminderToast.classList.add('hidden');
-  //     // }, 10000);
-
-  //     // burstAtReminder();
-  //     // // activeTask.firedReminders.push(Date.now());
-  //     // const reminderIndex = activeTask.firedReminders.length; // index 1..5
-  //     // const reminderNumber = Math.min(reminderIndex, 5);
-
-  //     // // send reminder-specific animation
-  //     // fetch(`${PI_URL}/play_reminder`, {
-  //     //   method: "POST",
-  //     //   headers: {"Content-Type": "application/json"},
-  //     //   body: JSON.stringify({ number: reminderNumber })
-  //     // });
-  //     // sendCommandToPi("play_full_once");
-  //   }
-  // };
-
   const updateReminderToast = () => {
   if (!activeTask || !activeTask.reminders) return;
   ensureReminderState(activeTask);
@@ -1140,11 +1088,11 @@ function sendCommandToPi(command) {
       onboardingStep === maxIndex ? 'Start' : 'Next';
     
         // --- Pi video control during onboarding ---
-    if (onboardingStep < onboardingSlides.length - 1) {
-      sendCommandToPi("default");          // first 3 slides
-    } else {
-      sendCommandToPi("mindful_break");    // last slide
-    }
+    // if (onboardingStep < onboardingSlides.length - 1) {
+    //   sendCommandToPi("default");          // first 3 slides
+    // } else {
+    //   sendCommandToPi("mindful_break");    // last slide
+    // }
 
     // Switch video depending on slide
     updateOnboardingVideoSrc();
@@ -1161,6 +1109,10 @@ function sendCommandToPi(command) {
     onboardingBtn.addEventListener('click', () => {
       const maxIndex = onboardingSlides.length - 1;
       if (onboardingStep < maxIndex) {
+        // Only when moving TO the last slide do we play mindful break video
+        if (onboardingStep === maxIndex - 1) {
+          sendCommandToPi("mindful_break");
+        }
         setOnboardingStep(onboardingStep + 1);
         return;
       }
