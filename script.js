@@ -1,3 +1,7 @@
+window.addEventListener("load", () => {
+  sendCommandToPi("default");
+});
+
 document.addEventListener('DOMContentLoaded', () => {
   // === RASPBERRY PI CONNECTION CONFIG ===
 const PI_URL = "https://192.168.0.115:5001";  // CHANGE IP if your Pi changes networks
@@ -771,6 +775,7 @@ function sendCommandToPi(command) {
       }, 10000);
 
       burstAtReminder();
+      sendCommandToPi("play_full_once");
     }
   };
 
@@ -835,6 +840,7 @@ function sendCommandToPi(command) {
     else overdueOverlay.classList.add('hidden');
 
     pauseBtn.textContent = 'Pause';
+    sendCommandToPi("default");
     startTicking();
   };
 
@@ -867,12 +873,14 @@ function sendCommandToPi(command) {
     if (!activeTask) return;
     pauseNow();
     pauseOverlay.classList.remove('hidden');
+    sendCommandToPi("pause");
   });
 
   resumeBtn.addEventListener('click', () => {
     if (!activeTask) return;
     pauseOverlay.classList.add('hidden');
     activeTask.status = 'running';
+    sendCommandToPi("default");
     pauseBtn.textContent = 'Pause';
     startTicking();
   });
@@ -1023,6 +1031,13 @@ function sendCommandToPi(command) {
     if (!onboardingBtn) return;
     onboardingBtn.textContent =
       onboardingStep === maxIndex ? 'Start' : 'Next';
+    
+        // --- Pi video control during onboarding ---
+    if (onboardingStep < onboardingSlides.length - 1) {
+      sendCommandToPi("default");          // first 3 slides
+    } else {
+      sendCommandToPi("mindful_break");    // last slide
+    }
 
     // Switch video depending on slide
     updateOnboardingVideoSrc();
@@ -1042,6 +1057,7 @@ function sendCommandToPi(command) {
         setOnboardingStep(onboardingStep + 1);
         return;
       }
+      sendCommandToPi("default");
       // finished onboarding for this session
       renderTodayView();
       showView('today');
@@ -1086,4 +1102,7 @@ function sendCommandToPi(command) {
   };
 
   initApp();
+  // === On app open, start default.mp4 on projector ===
+sendCommandToPi("default");
+
 });
