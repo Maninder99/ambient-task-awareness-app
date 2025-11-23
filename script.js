@@ -787,62 +787,100 @@ function sendCommandToPi(command) {
   };
 
   const burstAtReminder = () => {
-  dropLeafFromTree();   // ONLY ONE leaf
+    dropLeafFromTree();   // ONLY ONE leaf
   };
 
   // ---------------- Reminders ----------------
 
-  const updateReminderToast = () => {
-    if (!activeTask || !activeTask.reminders) return;
-    ensureReminderState(activeTask);
+  // const updateReminderToast = () => {
+  //   if (!activeTask || !activeTask.reminders) return;
+  //   ensureReminderState(activeTask);
 
-    const r = activeTask.reminders.find(
-      (off) =>
-        activeTask.remainingTime <= off &&
-        activeTask.remainingTime > off - 60
+  //   const r = activeTask.reminders.find(
+  //     (off) =>
+  //       activeTask.remainingTime <= off &&
+  //       activeTask.remainingTime > off - 60
+  //   );
+
+  //   if (r && !activeTask.firedReminders.includes(r)) {
+  //     // Count this reminder occurrence
+  //       activeTask.firedReminders.push(Date.now());
+  //       saveTasks();
+
+  //       // Compute reminder index 1..5
+  //       const reminderIndex = activeTask.firedReminders.length;
+  //       const reminderNumber = Math.min(reminderIndex, 5);
+
+  //       // Play corresponding reminder animation via Pi
+  //       fetch(`${PI_URL}/play_reminder`, {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/json" },
+  //         body: JSON.stringify({ number: reminderNumber })
+  //       });
+
+  //     // activeTask.firedReminders.push(r);
+  //     // saveTasks();
+
+  //     // toastText.textContent = formatOffsetText(r);
+  //     // reminderToast.classList.remove('hidden');
+
+  //     // clearTimeout(toastHideTimer);
+  //     // toastHideTimer = setTimeout(() => {
+  //     //   reminderToast.classList.add('hidden');
+  //     // }, 10000);
+
+  //     // burstAtReminder();
+  //     // // activeTask.firedReminders.push(Date.now());
+  //     // const reminderIndex = activeTask.firedReminders.length; // index 1..5
+  //     // const reminderNumber = Math.min(reminderIndex, 5);
+
+  //     // // send reminder-specific animation
+  //     // fetch(`${PI_URL}/play_reminder`, {
+  //     //   method: "POST",
+  //     //   headers: {"Content-Type": "application/json"},
+  //     //   body: JSON.stringify({ number: reminderNumber })
+  //     // });
+  //     // sendCommandToPi("play_full_once");
+  //   }
+  // };
+
+  const updateReminderToast = () => {
+  if (!activeTask || !activeTask.reminders) return;
+  ensureReminderState(activeTask);
+
+  const r = activeTask.reminders.find(
+    (off) =>
+      activeTask.remainingTime <= off &&
+      activeTask.remainingTime > off - 60
+  );
+
+  if (r && !activeTask.firedReminders.includes(r)) {
+    activeTask.firedReminders.push(r);
+    saveTasks();
+
+    // Show toast
+    toastText.textContent = formatOffsetText(r);
+    reminderToast.classList.remove("hidden");
+
+    clearTimeout(toastHideTimer);
+    toastHideTimer = setTimeout(
+      () => reminderToast.classList.add("hidden"),
+      6000
     );
 
-    if (r && !activeTask.firedReminders.includes(r)) {
-      // Count this reminder occurrence
-        activeTask.firedReminders.push(Date.now());
-        saveTasks();
+    // Drop only ONE leaf
+    burstAtReminder();
 
-        // Compute reminder index 1..5
-        const reminderIndex = activeTask.firedReminders.length;
-        const reminderNumber = Math.min(reminderIndex, 5);
-
-        // Play corresponding reminder animation via Pi
-        fetch(`${PI_URL}/play_reminder`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ number: reminderNumber })
-        });
-
-      // activeTask.firedReminders.push(r);
-      // saveTasks();
-
-      // toastText.textContent = formatOffsetText(r);
-      // reminderToast.classList.remove('hidden');
-
-      // clearTimeout(toastHideTimer);
-      // toastHideTimer = setTimeout(() => {
-      //   reminderToast.classList.add('hidden');
-      // }, 10000);
-
-      // burstAtReminder();
-      // // activeTask.firedReminders.push(Date.now());
-      // const reminderIndex = activeTask.firedReminders.length; // index 1..5
-      // const reminderNumber = Math.min(reminderIndex, 5);
-
-      // // send reminder-specific animation
-      // fetch(`${PI_URL}/play_reminder`, {
-      //   method: "POST",
-      //   headers: {"Content-Type": "application/json"},
-      //   body: JSON.stringify({ number: reminderNumber })
-      // });
-      // sendCommandToPi("play_full_once");
-    }
-  };
+    // Pi controller for reminder animations
+    const reminderIndex = activeTask.firedReminders.length;
+    const reminderNumber = Math.min(reminderIndex, 5);
+    fetch(`${PI_URL}/play_reminder`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ number: reminderNumber }),
+    });
+  }
+};
 
   // ---------------- Timer ----------------
 
