@@ -139,7 +139,7 @@
             class="onboarding-slide onboarding-slide-mb"
           >
             <!-- Mindful Break chip + curved arrow in top-right corner -->
-            <div class="onb-mb-topbar">
+            <!-- <div class="onb-mb-topbar">
               <button
                 class="mindful-break-chip onb-mb-chip"
                 type="button"
@@ -147,15 +147,32 @@
                 <span class="mb-icon">🍂</span>
                 <span>Mindful Break</span>
               </button>
-              <div class="onb-mb-arrow"></div>
+              <div id="onboard-arrow">➜</div>
+            </div> -->
+            <div class="topbar-mb-container">
+              <button id="mindful-break-home" class="mindful-break-btn">
+                  <span class="mb-icon">🍂</span>
+                  Mindful break
+              </button>
+              
             </div>
 
+            <!-- <div id="onboard-mb-container">
+              <button id="onboardMindfulBtn" class="mindful-chip">🧘 Mindful Break</button>
+              <div id="onboard-arrow">➜</div>
+            </div> -->
+
             <h2 class="onboarding-title">Mindful Breaks</h2>
+            <div class="onb-title-with-arrow">
+              <!-- <h2 class="onboarding-title">Mindful Breaks</h2> -->
+              <div class="arrow-to-mb"></div>
+            </div>
             <p class="onboarding-subtitle">
               Feeling overwhelmed?<br />
               Tap <strong>Mindful Break</strong> to pause, breathe,<br />
               and relax with a short meditation before continuing.
             </p>
+            <div class="onboarding-arrow"></div> 
           </section>
         </main>
 
@@ -678,6 +695,6 @@
     </defs>
   </svg>
 
-  <script src="script.js"></script>
+  <script src="script.js"></script> 
 </body>
 </html>
