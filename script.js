@@ -818,15 +818,34 @@ function sendCommandToPi(command) {
 
     // Drop only ONE leaf
     burstAtReminder();
+    // 1) Record this reminder firing
+    if (!Array.isArray(activeTask.firedReminders)) {
+      activeTask.firedReminders = [];
+    }
+    activeTask.firedReminders.push(Date.now());
+    saveTasks();
 
-    // Pi controller for reminder animations
-    const reminderIndex = activeTask.firedReminders.length;
-    const reminderNumber = Math.min(reminderIndex, 5);
+    // 2) Compute this reminder's number (1..5)
+    const reminderIndex = activeTask.firedReminders.length; // 1 for first, 2 for second...
+    const reminderNumber = Math.min(reminderIndex, 5);      // cap at 5 for overdue
+
+    // 3) Tell the Pi which reminder number to play
     fetch(`${PI_URL}/play_reminder`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ number: reminderNumber }),
+      body: JSON.stringify({ number: reminderNumber })
+    }).catch(err => {
+      console.error("Error sending reminder to Pi:", err);
     });
+
+    // Pi controller for reminder animations
+    // const reminderIndex = activeTask.firedReminders.length;
+    // const reminderNumber = Math.min(reminderIndex, 5);
+    // fetch(`${PI_URL}/play_reminder`, {
+    //   method: "POST",
+    //   headers: { "Content-Type": "application/json" },
+    //   body: JSON.stringify({ number: reminderNumber }),
+    // });
   }
 };
 
