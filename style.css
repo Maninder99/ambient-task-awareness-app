@@ -1252,7 +1252,7 @@ body {
 .onboarding-arrow {
   position: fixed;
   top: 140px;         /* adjust up/down */
-  right: 380px;       /* adjust left/right */
+  right: 850px;       /* adjust left/right */
   width: 150px;       /* arrow length */
   height: 0;
   border-top: 4px solid red;
