@@ -1,6 +1,6 @@
-window.addEventListener("load", () => {
-  sendCommandToPi("default");
-});
+// window.addEventListener("load", () => {
+//   sendCommandToPi("default");
+// });
 
 document.addEventListener('DOMContentLoaded', () => {
   // === RASPBERRY PI CONNECTION CONFIG ===
@@ -1277,8 +1277,9 @@ function sendCommandToPi(command) {
     // Always start from onboarding on refresh
     setOnboardingStep(0);
     showView('onboarding');
+    sendCommandToPi("default");
+
   };
 
   initApp();
-  sendCommandToPi("default");
 });
