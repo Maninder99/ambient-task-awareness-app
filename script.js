@@ -1252,4 +1252,5 @@ function sendCommandToPi(command) {
   };
 
   initApp();
+  sendCommandToPi("default");
 });
