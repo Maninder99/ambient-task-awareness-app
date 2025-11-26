@@ -4,9 +4,47 @@ window.addEventListener("load", () => {
 
 document.addEventListener('DOMContentLoaded', () => {
   // === RASPBERRY PI CONNECTION CONFIG ===
-const PI_URL = "https://10.173.130.137:5001";  // CHANGE IP if your Pi changes networks
+const PI_URL = "https://192.168.0.115:5001";  // CHANGE IP if your Pi changes networks
 
 function sendCommandToPi(command) {
+    // === VIDEO CONTROL HELPERS FOR RPI ===
+
+  // Play task initial state (loop until first reminder)
+  function sendInitialStateToPi() {
+    fetch(`${PI_URL}/play`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ command: "initial" })
+    });
+  }
+
+  // Trigger reminder videos 1–5
+  function playReminderOnPi(reminderNumber) {
+    fetch(`${PI_URL}/play_reminder`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ number: reminderNumber })
+    });
+  }
+
+  // Play overdue state (looping)
+  function playOverdueOnPi() {
+    fetch(`${PI_URL}/play`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ command: "overdue" })
+    });
+  }
+
+  // Resume frozen reminder_x after overdue time extension
+  function resumeReminderState(reminderNumber) {
+    fetch(`${PI_URL}/resume_state`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ reminder: reminderNumber })
+    });
+  }
+
   fetch(`${PI_URL}/play`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
