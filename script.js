@@ -250,30 +250,55 @@ function sendCommandToPi(command) {
   function showOverdueOverlay() {
     resetOverduePicker();
     overdueOverlay.classList.remove('hidden');
+
+    sendCommandToPi("overdue");
   }
 
   function applyOverdueExtension() {
-    if (!activeTask) {
-      overdueOverlay.classList.add('hidden');
-      return;
-    }
-    const extraSec = overdueExtensionMin * 60;
-    activeTask.remainingTime += extraSec;
-    activeTask.totalDuration += extraSec;
+  if (!activeTask) {
+    overdueOverlay.classList.add('hidden');
+    return;
+  }
 
-    activeDurationEl.textContent = formatHM(activeTask.totalDuration);
-    overdueShown = activeTask.remainingTime <= 0;
-    if (!overdueShown) overdueOverlay.classList.add('hidden');
+  const extraSec = overdueExtensionMin * 60;
+  activeTask.remainingTime += extraSec;
+  activeTask.totalDuration += extraSec;
 
-    renderReminderDots(activeTask);
-    updateTimerDisplay();
-    saveTasks();
-    renderTodayView();
+  activeDurationEl.textContent = formatHM(activeTask.totalDuration);
+  overdueShown = activeTask.remainingTime <= 0;
 
-    if (activeTask.status === 'running') {
-      startTicking();
+  if (!overdueShown) {
+    overdueOverlay.classList.add('hidden');
+
+    // Decide what to show on Pi after extending:
+    const firedCount = (activeTask.firedReminders || []).length;
+
+    if (firedCount === 0) {
+      // No reminders yet → back to task_initial_state.mp4
+      sendCommandToPi("task_initial");
+    } else {
+      // Some reminders fired → show latest reminder_X again
+      const lastIndex = Math.min(firedCount, 5);
+      fetch(`${PI_URL}/play_reminder`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ number: lastIndex })
+      }).catch(err => {
+        console.error("Error resuming reminder on Pi:", err);
+      });
     }
   }
+
+  renderReminderDots(activeTask);
+  updateTimerDisplay();
+  saveTasks();
+  renderTodayView();
+
+  if (activeTask.status === 'running') {
+    startTicking();
+  }
+}
+
 
   // ---------------- Today rendering ----------------
 
@@ -834,6 +859,7 @@ function sendCommandToPi(command) {
   if (!activeTask || !activeTask.reminders) return;
   ensureReminderState(activeTask);
 
+  // Find reminder whose offset window we are currently in (within last 60s)
   const r = activeTask.reminders.find(
     (off) =>
       activeTask.remainingTime <= off &&
@@ -841,33 +867,27 @@ function sendCommandToPi(command) {
   );
 
   if (r && !activeTask.firedReminders.includes(r)) {
+    // 1) Record that this reminder fired
     activeTask.firedReminders.push(r);
     saveTasks();
 
-    // Show toast
+    // 2) UI toast
     toastText.textContent = formatOffsetText(r);
-    reminderToast.classList.remove("hidden");
+    reminderToast.classList.remove('hidden');
 
     clearTimeout(toastHideTimer);
-    toastHideTimer = setTimeout(
-      () => reminderToast.classList.add("hidden"),
-      6000
-    );
+    toastHideTimer = setTimeout(() => {
+      reminderToast.classList.add('hidden');
+    }, 10000);
 
-    // Drop only ONE leaf
+    // 3) Animations / leaf bursts in the web UI
     burstAtReminder();
-    // 1) Record this reminder firing
-    if (!Array.isArray(activeTask.firedReminders)) {
-      activeTask.firedReminders = [];
-    }
-    activeTask.firedReminders.push(Date.now());
-    saveTasks();
 
-    // 2) Compute this reminder's number (1..5)
-    const reminderIndex = activeTask.firedReminders.length; // 1 for first, 2 for second...
-    const reminderNumber = Math.min(reminderIndex, 5);      // cap at 5 for overdue
+    // 4) Compute reminder index 1..5
+    const reminderIndex = activeTask.firedReminders.length; // 1st, 2nd, 3rd...
+    const reminderNumber = Math.min(reminderIndex, 5); // cap at 5
 
-    // 3) Tell the Pi which reminder number to play
+    // 5) Tell Pi to play reminder_X.mp4 (play once, freeze)
     fetch(`${PI_URL}/play_reminder`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -875,17 +895,9 @@ function sendCommandToPi(command) {
     }).catch(err => {
       console.error("Error sending reminder to Pi:", err);
     });
-
-    // Pi controller for reminder animations
-    // const reminderIndex = activeTask.firedReminders.length;
-    // const reminderNumber = Math.min(reminderIndex, 5);
-    // fetch(`${PI_URL}/play_reminder`, {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify({ number: reminderNumber }),
-    // });
   }
 };
+
 
   // ---------------- Timer ----------------
 
@@ -948,27 +960,32 @@ function sendCommandToPi(command) {
     else overdueOverlay.classList.add('hidden');
 
     pauseBtn.textContent = 'Pause';
-    sendCommandToPi("default");
+    sendCommandToPi("task_initial");
     startTicking();
   };
 
   const completeActive = () => {
-    if (!activeTask) return;
-    activeTask.status = 'completed';
-    activeTask.remainingTime = 0;
-    overdueOverlay.classList.add('hidden');
-    pauseOverlay.classList.add('hidden');
-    clearInterval(timerInterval);
-    timerInterval = null;
-    saveTasks();
-    renderTodayView();
-    clearTimeout(toastHideTimer);
-    reminderToast.classList.add('hidden');
-    leafFallContainer.innerHTML = '';
-    fallenLeaves = [];
-    activeTask = null;
-    showView('today');
+  if (!activeTask) return;
+  activeTask.status = 'completed';
+  activeTask.remainingTime = 0;
+  overdueOverlay.classList.add('hidden');
+  pauseOverlay.classList.add('hidden');
+  clearInterval(timerInterval);
+  timerInterval = null;
+  saveTasks();
+  renderTodayView();
+  clearTimeout(toastHideTimer);
+  reminderToast.classList.add('hidden');
+  leafFallContainer.innerHTML = '';
+  fallenLeaves = [];
+  activeTask = null;
+
+  // Back to default idle state on projector
+  sendCommandToPi("default");
+
+  showView('today');
   };
+
 
   doneBtn.addEventListener('click', completeActive);
 
