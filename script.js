@@ -940,6 +940,9 @@ function sendCommandToPi(command) {
 
     activeTask = t;
     activeTask.status = 'running';
+    // Reset reminder tracking to ensure correct sequencing
+    activeTask.firedReminders = [];
+    saveTasks();
 
     showView('task');
 
@@ -1002,13 +1005,27 @@ function sendCommandToPi(command) {
   });
 
   resumeBtn.addEventListener('click', () => {
-    if (!activeTask) return;
-    pauseOverlay.classList.add('hidden');
-    activeTask.status = 'running';
-    sendCommandToPi("default");
-    pauseBtn.textContent = 'Pause';
-    startTicking();
+  if (!activeTask) return;
+  pauseOverlay.classList.add('hidden');
+  activeTask.status = 'running';
+  
+  // Determine correct video to resume
+  const count = activeTask.firedReminders.length;
+  if (count === 0) {
+    sendCommandToPi("task_initial");
+  } else {
+    const lastIndex = Math.min(count, 5);
+    fetch(`${PI_URL}/play_reminder`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ number: lastIndex })
+    });
+  }
+
+  pauseBtn.textContent = 'Pause';
+  startTicking();
   });
+
 
   // Back from task to today
   backToTodayBtn.addEventListener('click', () => {
@@ -1235,7 +1252,4 @@ function sendCommandToPi(command) {
   };
 
   initApp();
-  // === On app open, start default.mp4 on projector ===
-sendCommandToPi("default");
-
 });
