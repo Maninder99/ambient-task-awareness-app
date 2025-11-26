@@ -1006,14 +1006,21 @@ function sendCommandToPi(command) {
 
   resumeBtn.addEventListener('click', () => {
   if (!activeTask) return;
+
   pauseOverlay.classList.add('hidden');
   activeTask.status = 'running';
-  
-  // Determine correct video to resume
+
   const count = activeTask.firedReminders.length;
-  if (count === 0) {
+
+  // Determine correct video to resume based on state
+  if (activeTask.remainingTime <= 0) {
+    // If overdue, resume overdue loop
+    sendCommandToPi("overdue");
+  } else if (count === 0) {
+    // No reminders yet → resume task_initial_state.mp4
     sendCommandToPi("task_initial");
   } else {
+    // Some reminders have fired → resume latest reminder
     const lastIndex = Math.min(count, 5);
     fetch(`${PI_URL}/play_reminder`, {
       method: "POST",
@@ -1022,9 +1029,10 @@ function sendCommandToPi(command) {
     });
   }
 
-  pauseBtn.textContent = 'Pause';
+  pauseBtn.textContent = "Pause";
   startTicking();
   });
+
 
 
   // Back from task to today
