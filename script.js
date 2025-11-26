@@ -1075,22 +1075,42 @@ function sendCommandToPi(command) {
   );
 
   endMindfulBreakBtn.addEventListener('click', () => {
-    clearInterval(mindfulInterval);
-    mindfulOverlay.classList.add('hidden');
-    setTimeout(() => {
-      mindfulLeafContainer.innerHTML = '';
-    }, 500);
+  clearInterval(mindfulInterval);
+  mindfulOverlay.classList.add('hidden');
+  setTimeout(() => {
+    mindfulLeafContainer.innerHTML = '';
+  }, 500);
 
-    // STOP mindful break & switch projector back to default.mp4
-    sendCommandToPi("default");
+  // Determine correct animation to resume
+  if (activeTask) {
+    activeTask.status = "running";
+    const count = activeTask.firedReminders.length;
 
-    if (activeTask) {
-      activeTask.status = 'running';
-      pauseBtn.textContent = 'Pause';
-      startTicking();
-      showView('task');
+    if (activeTask.remainingTime <= 0) {
+      // Overdue state
+      sendCommandToPi("overdue");
+    } else if (count === 0) {
+      // No reminder fired yet
+      sendCommandToPi("task_initial");
+    } else {
+      // Return to correct reminder_x.mp4
+      const lastIndex = Math.min(count, 5);
+      fetch(`${PI_URL}/play_reminder`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ number: lastIndex })
+      });
     }
+
+    pauseBtn.textContent = "Pause";
+    startTicking();
+    showView('task');
+  } else {
+    // No active task → go back to default
+    sendCommandToPi("default");
+  }
   });
+
 
   // Overdue +/- & Apply
   overdueMinusBtn.addEventListener('click', () => {
